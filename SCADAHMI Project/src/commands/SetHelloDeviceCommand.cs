@@ -3,9 +3,9 @@ using System;
 namespace SCADAHMI_Project;
 
 public sealed class SetHelloDeviceCommand
-    : DeviceCommand<SetHelloDeviceCommandArgs>
+    : IDeviceCommand<SetHelloDeviceCommandArgs>
 {
-    void DeviceCommand<SetHelloDeviceCommandArgs>.execute(
+    void IDeviceCommand<SetHelloDeviceCommandArgs>.Execute(
         DeviceListener deviceListener, 
         SetHelloDeviceCommandArgs args
     ) {
