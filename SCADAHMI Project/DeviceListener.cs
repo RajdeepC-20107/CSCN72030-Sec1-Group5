@@ -1,21 +1,43 @@
 using System;
+using System.Collections.Immutable;
+using System.Runtime.InteropServices;
 
 namespace SCADAHMI_Project;
 
-public static class DeviceListener
+public class DeviceListener
 {
-    private static Dictionary<Type, HashSet<Device>> messageBus = 
-        new Dictionary<Type, HashSet<Device>>();
+    private readonly Dictionary<Type, HashSet<Device>> messageBus = new();
     
-    public static void subscribe<T>(T instance)
+    public void Subscribe<T>(T instance)
         where T : Device
     {
-        
+        if(!messageBus.ContainsKey(typeof(T))) 
+        {
+            messageBus.TryAdd(typeof(T), []);
+        }
+
+        messageBus[typeof(T)].Add(instance);
     }
 
-    public static void unsubscribe<T>(T instance)
+    public void Unsubscribe<T>(T instance)
         where T : Device
     {
-        
+        if(!messageBus.ContainsKey(typeof(T)))
+        {
+            return;
+        }
+
+        messageBus[typeof(T)].Remove(instance);
+    }
+
+    public IReadOnlyList<Device> GetSubscribedDevices<T>()
+        where T : Device
+    {
+        if(!messageBus.ContainsKey(typeof(T)))
+        {
+            messageBus.TryAdd(typeof(T), []);
+        }
+
+        return messageBus[typeof(T)].ToList();
     }
 }
