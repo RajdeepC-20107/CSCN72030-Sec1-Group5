@@ -2,10 +2,7 @@ using System;
 
 namespace SCADAHMI_Project;
 
-public class HelloDevice : Device
+public sealed class HelloDevice : Device
 {
-    public override void onPublishEvent()
-    {
-        Console.WriteLine("Hello from this device!");
-    }
+    public string Message { get; set; } = "Hello World!";
 }
