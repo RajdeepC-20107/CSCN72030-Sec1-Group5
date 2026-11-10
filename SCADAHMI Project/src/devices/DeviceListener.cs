@@ -1,8 +1,10 @@
+using SCADAHMI_Project.src.utils;
+
 namespace SCADAHMI_Project;
 
 public class DeviceListener
 {
-    private readonly Dictionary<Type, HashSet<Device>> devices = new();
+    private readonly Dictionary<Type, OrderedHashSet<Device>> devices = new();
     
     public void Subscribe<T>(T instance)
         where T : Device
@@ -34,6 +36,6 @@ public class DeviceListener
             return [];
         }
 
-        return devices[typeof(T)].Cast<T>().ToList();
+        return devices[typeof(T)].Items.Cast<T>().ToList();
     }
 }
