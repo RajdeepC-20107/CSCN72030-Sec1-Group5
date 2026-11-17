@@ -28,11 +28,14 @@ class Program
         bus.AddDevice(device2);
         bus.AddDevice(device3);
 
+        bus.RemoveDevice(device2);
+
         SetHelloDeviceCommand command = new SetHelloDeviceCommand
         {
             DeviceGUIDs = new HashSet<string>
             {
                 device1.GUID.ToString(),
+                device2.GUID.ToString(),
                 device3.GUID.ToString()
             }
         };

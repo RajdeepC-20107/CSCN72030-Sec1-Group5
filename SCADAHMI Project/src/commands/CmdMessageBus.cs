@@ -4,7 +4,7 @@ using SCADAHMI_Project;
 class CmdMessageBus
 {
     Dictionary<Guid, Device> devices = new Dictionary<Guid, Device>();
-    private Thread runLoop;
+    private Thread? runLoop;
     private Queue<Action> cmdQueue = new();
     
     public void Enqueue<TArgs>(
@@ -30,6 +30,11 @@ class CmdMessageBus
     public void AddDevice(Device device)
     {
         devices.Add(device.GUID, device);
+    }
+
+    public void RemoveDevice(Device device)
+    {
+        devices.Remove(device.GUID);
     }
 
     private void ExecuteRunLoop()
