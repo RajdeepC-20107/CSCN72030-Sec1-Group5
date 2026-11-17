@@ -4,5 +4,5 @@ namespace SCADAHMI_Project;
 
 public sealed class HelloDevice : Device
 {
-    public string Message { get; set; } = "Hello World!";
+    public string Message { get; set; } = "Empty message.";
 }

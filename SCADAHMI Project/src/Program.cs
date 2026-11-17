@@ -1,32 +1,51 @@
 ﻿using SCADAHMI_Project;
 
-DeviceListener deviceListener = new();
+class Program
+{
+    static void Main()
+    {
+        HelloDevice device1 = new HelloDevice
+        {
+            GUID = Guid.NewGuid(),
+            Name = "Device 1"
+        };
 
-HelloDevice helloDevice1 = new();
-HelloDevice helloDevice2 = new();
+        HelloDevice device2 = new HelloDevice
+        {
+            GUID = Guid.NewGuid(),
+            Name = "Device 2"
+        };
 
-deviceListener.Subscribe(helloDevice1);
-deviceListener.Subscribe(helloDevice2);
-deviceListener.Subscribe(helloDevice1);
+        HelloDevice device3 = new HelloDevice
+        {
+            GUID = Guid.NewGuid(),
+            Name = "Device 3"
+        };
 
-Console.WriteLine(
-    string.Join(", ", deviceListener.GetSubscribedDevices<HelloDevice>())
-);
+        CmdMessageBus bus = new CmdMessageBus();
 
-deviceListener.Unsubscribe(helloDevice1);
-deviceListener.Unsubscribe(helloDevice2);
-deviceListener.Unsubscribe(helloDevice1);
+        bus.AddDevice(device1);
+        bus.AddDevice(device2);
+        bus.AddDevice(device3);
 
-Console.WriteLine(
-    string.Join(", ", deviceListener.GetSubscribedDevices<HelloDevice>())
-);
+        SetHelloDeviceCommand command = new SetHelloDeviceCommand
+        {
+            DeviceGUIDs = new HashSet<string>
+            {
+                device1.GUID.ToString(),
+                device3.GUID.ToString()
+            }
+        };
 
-deviceListener.Subscribe(helloDevice1);
-deviceListener.Subscribe(helloDevice2);
+        SetHelloDeviceCommandArgs args =
+            new SetHelloDeviceCommandArgs("Hello, World!");
 
-CommandHandler.Publish(
-    deviceListener,
-    new SetHelloDeviceCommand(),
-    new SetHelloDeviceCommandArgs("No way!")
-);
+        bus.Enqueue(command, args);
 
+        Thread.Sleep(500);
+
+        Console.WriteLine($"{device1.Name}: {device1.Message}");
+        Console.WriteLine($"{device2.Name}: {device2.Message}");
+        Console.WriteLine($"{device3.Name}: {device3.Message}");
+    }
+}

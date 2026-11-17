@@ -5,5 +5,6 @@ namespace SCADAHMI_Project;
 public interface IDeviceCommand<TCommandArgs> : ICommand
     where TCommandArgs : CommandArgs
 {
-    void Execute(DeviceListener deviceListener, TCommandArgs args);
+    HashSet<string> DeviceGUIDs { get; }
+    void Execute(TCommandArgs args, HashSet<Device> devices);
 }
