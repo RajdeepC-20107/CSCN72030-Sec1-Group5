@@ -23,7 +23,6 @@ public sealed record DeviceReading(
 {
     
     // Builds the reading a device reports when it cannot produce a sample.
-   
     public static DeviceReading Fault(string deviceId, string detail) => 
     new(deviceId, DateTime.Now, 0, string.Empty, DeviceStatus.Fault, detail);
 }
