@@ -1,9 +1,9 @@
 namespace SCADAHMI_Project;
 
 //The projector
-public sealed class ProjectorControl : TheatreDevice
+public sealed class ProjectorManager : TheatreDevice
 {
-    public ProjectorControl(string deviceId) : base(deviceId) { }
+    public ProjectorManager(string deviceId) : base(deviceId) { }
 
     // Whether the projector is switched on
     public bool PowerOn {get; set;}

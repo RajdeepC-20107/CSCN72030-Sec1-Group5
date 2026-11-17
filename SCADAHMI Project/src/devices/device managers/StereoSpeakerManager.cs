@@ -4,9 +4,9 @@ namespace SCADAHMI_Project;
 /* One speaker group (front left, center, surround or rear).
  Create one instance per group, each with its own id.
 */
-public sealed class StereoSpeakerControl : TheatreDevice
+public sealed class StereoSpeakerManager : TheatreDevice
 {
-    public StereoSpeakerControl(string deviceId) : base(deviceId) { }
+    public StereoSpeakerManager(string deviceId) : base(deviceId) { }
 
     // Output volume in percent (0-100)
     public double Volume { get; set; }
