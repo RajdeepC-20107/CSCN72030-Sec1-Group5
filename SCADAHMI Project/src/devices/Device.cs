@@ -6,4 +6,5 @@ public abstract class Device
 {
     public string? Name;
     public Guid GUID;
+    public DeviceType Type => DeviceType.GenericDevice;
 }

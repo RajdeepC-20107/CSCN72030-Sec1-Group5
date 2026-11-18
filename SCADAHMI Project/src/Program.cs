@@ -42,6 +42,7 @@ class Program
             DeviceGUIDs = new HashSet<string>
             {
                 device1.GUID.ToString(),
+                device2.GUID.ToString(),
                 device3.GUID.ToString()
             }
         };
@@ -172,7 +173,7 @@ class Program
 
         bus.Enqueue(command2, args2);
 
-        bus.RemoveDevice(calculator1);
+        bus.RemoveDevice(calculator1.GUID);
 
         PrintCalculatorSumCommand printCommand = new()
         {

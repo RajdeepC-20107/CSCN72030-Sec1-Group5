@@ -6,6 +6,12 @@ class CmdMessageBus
     Dictionary<Guid, Device> devices = new Dictionary<Guid, Device>();
     private Thread runLoop;
     private Queue<Action> cmdQueue = new();
+
+    // Singleton pattern to ensure only one instance of CmdMessageBus exists
+    private static readonly Lazy<CmdMessageBus> _lazy = 
+        new(() => new CmdMessageBus());
+
+    public static CmdMessageBus Instance => _lazy.Value;
     
     public void Enqueue<TArgs>(
         IDeviceCommand<TArgs> command,
@@ -16,7 +22,8 @@ class CmdMessageBus
         cmdQueue.Enqueue(() =>
         {
             var matchingDevices = devices.Values
-                .Where(d => command.DeviceGUIDs.Contains(d.GUID.ToString()))
+                .Where(d => command.DeviceGUIDs == null || command.DeviceGUIDs.Contains(d.GUID.ToString()))
+                .Where(d => command.DeviceTypes == null || command.DeviceTypes.Contains(d.Type))
                 .ToHashSet();
 
             command.Execute(commandArgs, matchingDevices);
@@ -33,16 +40,15 @@ class CmdMessageBus
         devices.Add(device.GUID, device);
     }
 
-    public void RemoveDevice(Device device)
+    public void RemoveDevice(Guid deviceGUID)
     {
-        devices.Remove(device.GUID);
+        devices.Remove(deviceGUID);
     }
 
     private void ExecuteRunLoop()
     {
         while (cmdQueue.Count != 0)
         {
-            Console.WriteLine("Executing command");
             Action cmd = cmdQueue.Dequeue();
             cmd.Invoke();
         }
