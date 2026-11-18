@@ -10,7 +10,10 @@ public sealed class SetHelloDeviceCommand
     public void Execute(SetHelloDeviceCommandArgs args, HashSet<Device> devices)
     {
         foreach (HelloDevice device in devices) {
-            device.Message = args.Message;
+            if (DeviceGUIDs.Contains(device.GUID.ToString()))
+            {
+                device.Message = args.Message;
+            }
         }
     }
 }

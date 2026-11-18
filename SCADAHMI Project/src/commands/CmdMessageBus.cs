@@ -8,9 +8,10 @@ class CmdMessageBus
     private Queue<Action> cmdQueue = new();
     
     public void Enqueue<TArgs>(
-    IDeviceCommand<TArgs> command,
-    TArgs commandArgs)
-    where TArgs : CommandArgs
+        IDeviceCommand<TArgs> command,
+        TArgs commandArgs
+    )
+        where TArgs : CommandArgs
     {
         cmdQueue.Enqueue(() =>
         {
@@ -30,6 +31,11 @@ class CmdMessageBus
     public void AddDevice(Device device)
     {
         devices.Add(device.GUID, device);
+    }
+
+    public void RemoveDevice(Device device)
+    {
+        devices.Remove(device.GUID);
     }
 
     private void ExecuteRunLoop()
