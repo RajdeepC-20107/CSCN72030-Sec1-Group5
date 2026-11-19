@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace SCADAHMI_Project;
 
 /// <summary>
@@ -9,7 +11,7 @@ public class DeviceRegistry
     /// <summary>
     /// The container for all devices.
     /// </summary>
-    private readonly Dictionary<Type, OrderedHashSet<Device>> devices = [];
+    private readonly Dictionary<Guid, Device> devices = [];
     
     /// <summary>
     /// Subscribe a device to be affected by commands.
@@ -20,12 +22,7 @@ public class DeviceRegistry
     public bool Subscribe<TDevice>(TDevice instance)
         where TDevice : Device
     {
-        if(!devices.ContainsKey(typeof(TDevice))) 
-        {
-            devices.TryAdd(typeof(TDevice), []);
-        }
-
-        return devices[typeof(TDevice)].Add(instance);
+        return devices.TryAdd(instance.Guid, instance);
     }
 
     /// <summary>
@@ -37,12 +34,7 @@ public class DeviceRegistry
     public bool Unsubscribe<TDevice>(TDevice instance)
         where TDevice : Device
     {
-        if(!devices.ContainsKey(typeof(TDevice)))
-        {
-            return false;
-        }
-
-        return devices[typeof(TDevice)].Remove(instance);
+        return devices.Remove(instance.Guid);
     }
 
     /// <summary>
@@ -53,14 +45,8 @@ public class DeviceRegistry
     public IReadOnlyList<TDevice> GetSubscribedDevices<TDevice>()
         where TDevice : Device
     {
-        if(!devices.ContainsKey(typeof(TDevice)))
-        {
-            return [];
-        }
-
-        return devices[typeof(TDevice)]
-            .Items
-            .Cast<TDevice>()
+        return devices.Values
+            .OfType<TDevice>()
             .ToList();
     }
 }
