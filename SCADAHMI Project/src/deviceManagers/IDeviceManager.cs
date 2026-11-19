@@ -9,7 +9,7 @@ namespace SCADAHMI_Project;
 /// </summary>
 /// <typeparam name="TDevice"></typeparam>
 /// <typeparam name="TCreateDeviceArgs"></typeparam>
-public interface DeviceManager<TDevice, TCreateDeviceArgs>
+public interface IDeviceManager<TDevice, TCreateDeviceArgs>
     where TDevice : Device
     where TCreateDeviceArgs : CreateDeviceArgs
 {

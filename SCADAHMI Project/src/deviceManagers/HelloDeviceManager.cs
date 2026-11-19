@@ -6,7 +6,7 @@ namespace SCADAHMI_Project;
 /// Makes managing different HelloDevice commands/actions
 /// easy by providing methods for them.
 /// </summary>
-public class HelloDeviceManager : DeviceManager<HelloDevice, CreateHelloDeviceArgs>
+public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceArgs>
 {
     private HelloDeviceManager() {}
 
