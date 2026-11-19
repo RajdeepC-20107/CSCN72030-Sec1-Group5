@@ -3,7 +3,7 @@
 using SCADAHMI_Project;
 
 [TestClass]
-public sealed class deviceRegistryTests
+public sealed class HelloDeviceManagerTests
 {
     [TestMethod]
     public void SubscribeHelloDevices()

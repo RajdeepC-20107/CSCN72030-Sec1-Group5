@@ -8,4 +8,4 @@ namespace SCADAHMI_Project;
 public abstract class Device
 {
     public Guid Guid { get; } = Guid.NewGuid();
-};
+}

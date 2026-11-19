@@ -15,7 +15,8 @@ public static class CommandBus
     private static readonly Queue<(ICommand, CommandArgs)> messageBus = [];
 
     /// <summary>
-    /// Allows the publishing of commands that will eventually execute.
+    /// Allows the publishing of commands that will eventually 
+    /// execute asynchronously (hopefully).
     /// </summary>
     /// <typeparam name="TCommand"></typeparam>
     /// <typeparam name="TCommandArgs"></typeparam>

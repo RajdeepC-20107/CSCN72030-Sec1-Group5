@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using SCADAHMI_Project;
 
 var builder = WebApplication.CreateBuilder(args);
 
