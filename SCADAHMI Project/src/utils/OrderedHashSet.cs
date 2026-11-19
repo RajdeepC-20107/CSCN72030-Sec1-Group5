@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 
-namespace SCADAHMI_Project.src.utils;
+namespace SCADAHMI_Project;
 
 public class OrderedHashSet<T> : IEnumerable<T>
 {

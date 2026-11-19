@@ -9,18 +9,18 @@ public sealed class CommandHandlerTests
     public void SetHelloDeviceMessages()
     {
         // Arrange
-        DeviceListener deviceListener = new();
+        DeviceRegistry deviceRegistry = new();
         HelloDevice helloDevice1 = new();
         HelloDevice helloDevice2 = new();
 
-        deviceListener.Subscribe(helloDevice1);
-        deviceListener.Subscribe(helloDevice2);
+        deviceRegistry.Subscribe(helloDevice1);
+        deviceRegistry.Subscribe(helloDevice2);
 
         string newMessage = "A new message!";
 
         // Act
-        CommandHandler.Publish(
-            deviceListener, 
+        CommandBus.Publish(
+            deviceRegistry, 
             new SetHelloDeviceCommand(),
             new SetHelloDeviceCommandArgs(newMessage)
         );

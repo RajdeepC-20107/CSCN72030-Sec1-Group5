@@ -3,23 +3,23 @@
 using SCADAHMI_Project;
 
 [TestClass]
-public sealed class DeviceListenerTests
+public sealed class deviceRegistryTests
 {
     [TestMethod]
     public void SubscribeHelloDevices()
     {
         // Arrange
-        DeviceListener deviceListener = new();
+        DeviceRegistry deviceRegistry = new();
         HelloDevice helloDevice1 = new();
         HelloDevice helloDevice2 = new();
         int expectedListCount = 2;
 
         // Act
-        deviceListener.Subscribe(helloDevice1);
-        deviceListener.Subscribe(helloDevice2);
-        deviceListener.Subscribe(helloDevice1);
+        deviceRegistry.Subscribe(helloDevice1);
+        deviceRegistry.Subscribe(helloDevice2);
+        deviceRegistry.Subscribe(helloDevice1);
 
-        var list = deviceListener.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
 
         // Assert
         Assert.HasCount(expectedListCount, list);
@@ -31,19 +31,19 @@ public sealed class DeviceListenerTests
     public void UnsubscribeHelloDevices()
     {
         // Arrange
-        DeviceListener deviceListener = new();
+        DeviceRegistry deviceRegistry = new();
         HelloDevice helloDevice1 = new();
         HelloDevice helloDevice2 = new();
 
-        deviceListener.Subscribe(helloDevice1);
-        deviceListener.Subscribe(helloDevice2);
+        deviceRegistry.Subscribe(helloDevice1);
+        deviceRegistry.Subscribe(helloDevice2);
 
         // Act
-        deviceListener.Unsubscribe(helloDevice1);
-        deviceListener.Unsubscribe(helloDevice2);
-        deviceListener.Unsubscribe(helloDevice1);
+        deviceRegistry.Unsubscribe(helloDevice1);
+        deviceRegistry.Unsubscribe(helloDevice2);
+        deviceRegistry.Unsubscribe(helloDevice1);
 
-        var list = deviceListener.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
 
         // Assert
         Assert.IsEmpty(list);
@@ -53,7 +53,7 @@ public sealed class DeviceListenerTests
     public void SubscriptionOrderPreservation()
     {
         // Arrange
-        DeviceListener deviceListener = new();
+        DeviceRegistry deviceRegistry = new();
         HelloDevice helloDevice1 = new();
         HelloDevice helloDevice2 = new();
         HelloDevice helloDevice3 = new();
@@ -61,14 +61,14 @@ public sealed class DeviceListenerTests
         int expectedListCount = 4;
 
         // Act
-        deviceListener.Subscribe(helloDevice3);
-        deviceListener.Subscribe(helloDevice2);
-        deviceListener.Subscribe(helloDevice1);
-        deviceListener.Unsubscribe(helloDevice2);
-        deviceListener.Subscribe(helloDevice2);
-        deviceListener.Subscribe(helloDevice4);
+        deviceRegistry.Subscribe(helloDevice3);
+        deviceRegistry.Subscribe(helloDevice2);
+        deviceRegistry.Subscribe(helloDevice1);
+        deviceRegistry.Unsubscribe(helloDevice2);
+        deviceRegistry.Subscribe(helloDevice2);
+        deviceRegistry.Subscribe(helloDevice4);
 
-        var list = deviceListener.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
 
         // Assert
         Assert.HasCount(expectedListCount, list);
