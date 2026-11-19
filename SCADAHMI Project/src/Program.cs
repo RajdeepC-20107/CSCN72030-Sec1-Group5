@@ -25,8 +25,8 @@ deviceRegistry.Subscribe(helloDevice1);
 deviceRegistry.Subscribe(helloDevice2);
 
 CommandBus.Publish(
-    deviceRegistry,
     new SetHelloDeviceCommand(),
-    new SetHelloDeviceCommandArgs("No way!")
+    new SetHelloDeviceCommandArgs("No way!"),
+    deviceRegistry
 );
 

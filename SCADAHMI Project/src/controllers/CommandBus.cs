@@ -23,15 +23,16 @@ public static class CommandBus
     /// <param name="command"></param>
     /// <param name="commandArgs"></param>
     public static void Publish<TCommand, TCommandArgs>(
-        DeviceRegistry deviceRegistry, 
         TCommand command,
-        TCommandArgs commandArgs
+        TCommandArgs commandArgs,
+        DeviceRegistry? registry = null
     )
         where TCommandArgs : CommandArgs
         where TCommand : IDeviceCommand<TCommandArgs>
     {
+        registry ??= DeviceRegistry.Instance;
         messageBus.Enqueue((command, commandArgs));
         (TCommand, TCommandArgs) poppedCommand = ((TCommand, TCommandArgs))messageBus.Dequeue();
-        poppedCommand.Item1.Execute(deviceRegistry, poppedCommand.Item2);
+        poppedCommand.Item1.Execute(registry, poppedCommand.Item2);
     }
 }

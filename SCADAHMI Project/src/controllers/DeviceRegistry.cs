@@ -9,6 +9,11 @@ namespace SCADAHMI_Project;
 public class DeviceRegistry
 {
     /// <summary>
+    /// The global DeviceRegistry singleton.
+    /// </summary>
+    public static DeviceRegistry Instance { get; } = new();
+
+    /// <summary>
     /// The container for all devices.
     /// </summary>
     private readonly Dictionary<Guid, Device> devices = [];

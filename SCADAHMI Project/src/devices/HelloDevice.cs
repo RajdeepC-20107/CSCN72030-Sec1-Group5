@@ -2,12 +2,19 @@ using System;
 
 namespace SCADAHMI_Project;
 
+/// <summary>
+/// The first device class to make sure this whole thing works.
+/// </summary>
 public sealed class HelloDevice : Device
 {
+    /// <summary>
+    /// The message of the HelloDevice.
+    /// </summary>
     public string Message { get; set; } = "Hello World!";
 
     /// <summary>
-    /// Devices will know how to affect and set their own values.
+    /// Supposedly, Devices will know how to affect and set their own values.
+    /// This would be called via a command.Execute() method.
     /// Ex. If a speaker that is directed to B2 must now direct to F3,
     ///     a method like this with fed argumenta will know how to 
     ///     change its variables and apply calculations as required.

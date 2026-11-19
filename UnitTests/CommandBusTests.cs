@@ -3,7 +3,7 @@
 using SCADAHMI_Project;
 
 [TestClass]
-public sealed class CommandHandlerTests
+public sealed class CommandBusTests
 {
     [TestMethod]
     public void SetHelloDeviceMessages()
@@ -20,9 +20,9 @@ public sealed class CommandHandlerTests
 
         // Act
         CommandBus.Publish(
-            deviceRegistry, 
             new SetHelloDeviceCommand(),
-            new SetHelloDeviceCommandArgs(newMessage)
+            new SetHelloDeviceCommandArgs(newMessage),
+            deviceRegistry
         );
 
         // Assert
