@@ -67,5 +67,9 @@ public sealed class DeviceRegistryTests
 
         Assert.IsTrue(deviceRegistry.Unsubscribe(helloDevice));
         Assert.AreEqual(versionBefore + 2, deviceRegistry.Version);
+
+        // A failed unsubscribe must not bump the revision.
+        Assert.IsFalse(deviceRegistry.Unsubscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 2, deviceRegistry.Version);
     }
 }

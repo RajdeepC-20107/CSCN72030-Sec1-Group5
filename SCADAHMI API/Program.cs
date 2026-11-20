@@ -12,6 +12,9 @@ using SCADAHMI_Project;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// API Controllers
+builder.Services.AddControllers();
+
 // JSON serialization
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -86,61 +89,10 @@ app.UseStaticFiles();
 
 app.MapHub<ScadaHub>("/hub");
 
-app.MapPost("/api/commands/set-message",
-    (SetHelloDeviceMessageRequest request, CommandDispatcher dispatcher) =>
-    {
-        ApiResponse response = dispatcher.Dispatch(request);
-        return response.Success
-            ? Results.Ok(response)
-            : Results.BadRequest(response);
-    })
-    .WithName("SetHelloDeviceMessage")
-    .WithTags("Commands");
-
-app.MapPost("/api/devices", async (
-    CreateHelloDeviceRequest request,
-    DeviceRegistry registry,
-    DeviceStateNotifier notifier) =>
-    {
-        HelloDevice? device = HelloDeviceManager.CreateDevice(
-            new CreateHelloDeviceArgs(request.Payload?.Message), registry);
-
-        string requestId = string.IsNullOrWhiteSpace(request.RequestId)
-            ? Guid.NewGuid().ToString()
-            : request.RequestId;
-
-        if (device is null)
-        {
-            return Results.BadRequest(new ApiResponse(
-                requestId, false, Error: "The device could not be registered."));
-        }
-
-        await notifier.PublishAsync(registry, registry.Version);
-
-        return Results.Ok(new ApiResponse(
-            requestId,
-            true,
-            new DeviceStateDto(device.Guid, nameof(HelloDevice), device.Message)));
-    })
-    .WithName("CreateHelloDevice")
-    .WithTags("Devices");
-
-app.MapGet("/api/devices", (DeviceRegistry registry, int since = 0) =>
-    {
-        // A client that has never fetched a snapshot (since == 0) always
-        // gets the full state; otherwise 304 means "nothing changed".
-        if (since > 0 && since >= registry.Version)
-        {
-            return Results.StatusCode(StatusCodes.Status304NotModified);
-        }
-
-        return Results.Ok(DeviceSnapshotFactory.Create(registry, registry.Version));
-    })
-    .WithName("GetDevices")
-    .WithTags("Devices");
-
 // Bridge core command execution to SignalR clients.
 DeviceStateNotifier notifier = app.Services.GetRequiredService<DeviceStateNotifier>();
 CommandBus.CommandExecuted += (_, e) => _ = notifier.PublishAsync(e.Registry, e.Version);
+
+app.MapControllers();
 
 app.Run();
