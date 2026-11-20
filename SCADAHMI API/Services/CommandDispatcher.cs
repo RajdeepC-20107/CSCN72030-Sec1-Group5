@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using SCADAHMI_API.Contracts.Requests;
 using SCADAHMI_API.Contracts.Responses;
 using SCADAHMI_Project;
@@ -23,17 +24,24 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
     {
         string requestId = Normalize(request.RequestId);
 
-        if (string.IsNullOrWhiteSpace(request.Payload?.Message))
+        if (request.Payload?.Messages is null || request.Payload.Messages.Count == 0)
         {
-            return new ApiResponse(requestId, false, Error: "payload.message must not be empty.");
+            return new ApiResponse(requestId, false, Error: "payload and/or messages must not be empty.");
         }
 
         try
         {
-            CommandBus.Publish(
-                new SetHelloDeviceCommand(),
-                new SetHelloDeviceCommandArgs(request.Payload.Message),
-                registry);
+            IReadOnlyList<(HelloDevice, string)> devices = (
+                from d in registry.GetSubscribedDevices<HelloDevice>()
+                where request.Payload.Messages.TryGetValue(d.Guid, out string? value)
+                select (d, request.Payload.Messages[d.Guid])
+            ).ToList();
+
+
+            HelloDeviceManager.SetHelloDeviceMessages(
+                devices.ToList(),
+                registry
+            );
 
             return new ApiResponse(requestId, true);
         }

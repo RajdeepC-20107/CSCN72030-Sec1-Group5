@@ -8,4 +8,6 @@ public sealed record SetHelloDeviceMessageRequest(
     SetHelloDeviceMessagePayload Payload
 ) : CommandRequest(RequestId);
 
-public sealed record SetHelloDeviceMessagePayload(string Message);
+public sealed record SetHelloDeviceMessagePayload(
+    Dictionary<Guid, string> Messages
+);

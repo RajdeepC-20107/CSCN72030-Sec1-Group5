@@ -22,6 +22,13 @@ public class DeviceRegistry
     private int version;
 
     /// <summary>
+    /// Raised whenever the registry revision advances. Any mutation that
+    /// calls <see cref="MarkChanged"/> automatically notifies listeners,
+    /// regardless of which command or manager performed it.
+    /// </summary>
+    public event EventHandler<int>? Changed;
+
+    /// <summary>
     /// Monotonic revision of the registry; clients use it to detect changes.
     /// </summary>
     public int Version => Volatile.Read(ref version);
@@ -29,7 +36,11 @@ public class DeviceRegistry
     /// <summary>
     /// Bumps the revision after a device or its state has changed.
     /// </summary>
-    public void MarkChanged() => Interlocked.Increment(ref version);
+    public void MarkChanged()
+    {
+        int next = Interlocked.Increment(ref version);
+        Changed?.Invoke(this, next);
+    }
     
     /// <summary>
     /// Subscribe a device to be affected by commands.

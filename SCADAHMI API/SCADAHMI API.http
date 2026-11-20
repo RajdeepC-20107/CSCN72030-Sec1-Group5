@@ -7,6 +7,7 @@ Content-Type: application/json
 {
   "requestId": "demo-create",
   "payload": {
+    $type: "helloDevice"
     "message": "Hello from the API"
   }
 }
@@ -19,13 +20,15 @@ Accept: application/json
 GET {{SCADAHMI_API_HostAddress}}/api/devices?since=1
 Accept: application/json
 
-### Set the message of all HelloDevices
+### Set the messages of specific HelloDevices (ids come from GET /api/devices)
 POST {{SCADAHMI_API_HostAddress}}/api/commands/set-message
 Content-Type: application/json
 
 {
   "requestId": "demo-1",
   "payload": {
-    "message": "No way!"
+    "messages": {
+      "00000000-0000-0000-0000-000000000000": "No way!"
+    }
   }
 }

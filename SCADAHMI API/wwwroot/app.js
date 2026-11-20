@@ -9,6 +9,7 @@ const connection = new signalR.HubConnectionBuilder()
     .build();
 
 let lastVersion = 0;
+let currentDevices = [];
 
 const statusBadge = document.getElementById("connectionStatus");
 const versionLabel = document.getElementById("version");
@@ -51,6 +52,7 @@ async function start() {
 
 function renderSnapshot(snapshot, source) {
     lastVersion = snapshot.version ?? 0;
+    currentDevices = snapshot.devices ?? [];
     versionLabel.textContent = lastVersion;
     sourceLabel.textContent = source;
 
@@ -71,12 +73,23 @@ function renderSnapshot(snapshot, source) {
         id.className = "device-id";
         id.textContent = device.id.substring(0, 8);
 
-        const message = document.createElement("span");
-        message.className = "device-message";
-        // textContent (not innerHTML) so device data can never inject markup.
-        message.textContent = device.message;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "device-input";
+        input.value = device.message;
+        input.setAttribute("aria-label", `Message for device ${device.id}`);
 
-        row.append(id, message);
+        const button = document.createElement("button");
+        button.className = "small";
+        button.textContent = "Set";
+        button.addEventListener("click", () =>
+            sendMessages({ [device.id]: input.value }, `Set ${device.id.substring(0, 8)}`));
+
+        const controls = document.createElement("div");
+        controls.className = "device-controls";
+        controls.append(input, button);
+
+        row.append(id, controls);
         deviceList.appendChild(row);
     }
 
@@ -109,16 +122,30 @@ async function postJson(url, body, label) {
 
 async function createDevice() {
     const message = document.getElementById("createMessage").value;
-    await postJson("/api/devices", { payload: { message } }, "Create device");
+    await postJson("/api/devices", { payload: { $type: "helloDevice", message } }, "Create device");
+}
+
+async function sendMessages(messages, label) {
+    await postJson(
+        "/api/commands/set-message",
+        { payload: { messages } },
+        label
+    );
 }
 
 async function setMessage() {
+    if (currentDevices.length === 0) {
+        log("No devices to update yet - create one first.");
+        return;
+    }
+
     const message = document.getElementById("setMessage").value;
-    await postJson(
-        "/api/commands/set-message",
-        { payload: { message } },
-        "Set message"
-    );
+    const messages = {};
+    for (const device of currentDevices) {
+        messages[device.id] = message;
+    }
+
+    await sendMessages(messages, "Set all messages");
 }
 
 async function checkChanges() {

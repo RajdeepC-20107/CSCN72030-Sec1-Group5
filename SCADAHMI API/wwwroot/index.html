@@ -66,7 +66,13 @@
     }
     ul.devices li:last-child { border-bottom: 0; }
     .device-id { font-family: ui-monospace, monospace; font-size: .8rem; color: #64748b; }
-    .device-message { font-weight: 600; word-break: break-word; text-align: right; }
+    .device-controls { display: flex; align-items: center; justify-content: flex-end; gap: .4rem; flex: 1; }
+    input.device-input {
+      flex: 1; min-width: 0; padding: .35rem .5rem; font: inherit; font-size: .85rem;
+      border: 1px solid #cbd5e1; border-radius: 5px;
+    }
+    button.small { margin-top: 0; padding: .35rem .6rem; font-size: .78rem; }
+    .hint { margin: .6rem 0 0; font-size: .8rem; color: #64748b; }
     .empty { color: #94a3b8; font-style: italic; }
 
     pre.log {
@@ -101,10 +107,11 @@
     </section>
 
     <section class="card">
-      <h2>Set every device message</h2>
-      <label for="setMessage">New message</label>
+      <h2>Set device messages</h2>
+      <label for="setMessage">Message for all devices</label>
       <input id="setMessage" type="text" value="No way!" autocomplete="off">
-      <button id="setButton">POST /api/commands/set-message</button>
+      <button id="setButton">Apply to all devices</button>
+      <p class="hint">Or edit a single device in the Live snapshot list below.</p>
     </section>
 
     <section class="card">

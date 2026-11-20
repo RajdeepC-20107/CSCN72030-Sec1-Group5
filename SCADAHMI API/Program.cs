@@ -89,9 +89,11 @@ app.UseStaticFiles();
 
 app.MapHub<ScadaHub>("/hub");
 
-// Bridge core command execution to SignalR clients.
+// Any registry revision change is pushed to SignalR clients, no matter
+// whether it came from a command, a manager, or a subscribe/unsubscribe.
 DeviceStateNotifier notifier = app.Services.GetRequiredService<DeviceStateNotifier>();
-CommandBus.CommandExecuted += (_, e) => _ = notifier.PublishAsync(e.Registry, e.Version);
+DeviceRegistry deviceRegistry = app.Services.GetRequiredService<DeviceRegistry>();
+deviceRegistry.Changed += (_, version) => _ = notifier.PublishAsync(deviceRegistry, version);
 
 app.MapControllers();
 
