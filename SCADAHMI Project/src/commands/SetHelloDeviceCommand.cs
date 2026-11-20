@@ -2,15 +2,18 @@ using System;
 
 namespace SCADAHMI_Project;
 
+/// <summary>
+/// Command to set all HelloDevices' message values.
+/// </summary>
 public sealed class SetHelloDeviceCommand
     : IDeviceCommand<SetHelloDeviceCommandArgs>
 {
     void IDeviceCommand<SetHelloDeviceCommandArgs>.Execute(
-        DeviceListener deviceListener, 
+        DeviceRegistry deviceRegistry, 
         SetHelloDeviceCommandArgs args
     ) {
         IReadOnlyList<HelloDevice> devices =
-            deviceListener.GetSubscribedDevices<HelloDevice>();
+            deviceRegistry.GetSubscribedDevices<HelloDevice>();
 
         foreach(HelloDevice device in devices)
         {

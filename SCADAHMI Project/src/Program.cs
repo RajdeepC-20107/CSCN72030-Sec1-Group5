@@ -1,32 +1,32 @@
 ﻿using SCADAHMI_Project;
 
-DeviceListener deviceListener = new();
+DeviceRegistry deviceRegistry = new();
 
 HelloDevice helloDevice1 = new();
 HelloDevice helloDevice2 = new();
 
-deviceListener.Subscribe(helloDevice1);
-deviceListener.Subscribe(helloDevice2);
-deviceListener.Subscribe(helloDevice1);
+deviceRegistry.Subscribe(helloDevice1);
+deviceRegistry.Subscribe(helloDevice2);
+deviceRegistry.Subscribe(helloDevice1);
 
 Console.WriteLine(
-    string.Join(", ", deviceListener.GetSubscribedDevices<HelloDevice>())
+    string.Join(", ", deviceRegistry.GetSubscribedDevices<HelloDevice>())
 );
 
-deviceListener.Unsubscribe(helloDevice1);
-deviceListener.Unsubscribe(helloDevice2);
-deviceListener.Unsubscribe(helloDevice1);
+deviceRegistry.Unsubscribe(helloDevice1);
+deviceRegistry.Unsubscribe(helloDevice2);
+deviceRegistry.Unsubscribe(helloDevice1);
 
 Console.WriteLine(
-    string.Join(", ", deviceListener.GetSubscribedDevices<HelloDevice>())
+    string.Join(", ", deviceRegistry.GetSubscribedDevices<HelloDevice>())
 );
 
-deviceListener.Subscribe(helloDevice1);
-deviceListener.Subscribe(helloDevice2);
+deviceRegistry.Subscribe(helloDevice1);
+deviceRegistry.Subscribe(helloDevice2);
 
-CommandHandler.Publish(
-    deviceListener,
+CommandBus.Publish(
     new SetHelloDeviceCommand(),
-    new SetHelloDeviceCommandArgs("No way!")
+    new SetHelloDeviceCommandArgs("No way!"),
+    deviceRegistry
 );
 
