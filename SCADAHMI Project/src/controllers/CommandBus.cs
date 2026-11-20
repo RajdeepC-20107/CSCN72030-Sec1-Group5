@@ -15,12 +15,23 @@ public static class CommandBus
     private static readonly Queue<(ICommand, CommandArgs)> messageBus = [];
 
     /// <summary>
+    /// Serializes bus access so concurrent clients cannot corrupt the queue
+    /// or interleave command execution.
+    /// </summary>
+    private static readonly Lock gate = new();
+
+    /// <summary>
+    /// Notifies listeners (such as the SignalR notifier) that a command ran.
+    /// </summary>
+    public static event EventHandler<CommandExecutedEventArgs>? CommandExecuted;
+
+    /// <summary>
     /// Allows the publishing of commands that will eventually 
     /// execute asynchronously (hopefully).
     /// </summary>
     /// <typeparam name="TCommand"></typeparam>
     /// <typeparam name="TCommandArgs"></typeparam>
-    /// <param name="deviceRegistry"></param>
+    /// <param name="registry"></param>
     /// <param name="command"></param>
     /// <param name="commandArgs"></param>
     public static void Publish<TCommand, TCommandArgs>(
@@ -31,9 +42,20 @@ public static class CommandBus
         where TCommandArgs : CommandArgs
         where TCommand : IDeviceCommand<TCommandArgs>
     {
-        registry ??= DeviceRegistry.Instance;
-        messageBus.Enqueue((command, commandArgs));
-        (TCommand, TCommandArgs) poppedCommand = ((TCommand, TCommandArgs))messageBus.Dequeue();
-        poppedCommand.Item1.Execute(registry, poppedCommand.Item2);
+        lock (gate)
+        {
+            registry ??= DeviceRegistry.Instance;
+            messageBus.Enqueue((command, commandArgs));
+            (TCommand, TCommandArgs) poppedCommand = ((TCommand, TCommandArgs))messageBus.Dequeue();
+            poppedCommand.Item1.Execute(registry, poppedCommand.Item2);
+
+            registry.MarkChanged();
+            CommandExecuted?.Invoke(
+                null,
+                new CommandExecutedEventArgs(
+                    poppedCommand.Item1, poppedCommand.Item2, registry, registry.Version
+                )
+            );
+        }
     }
 }

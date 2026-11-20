@@ -26,7 +26,7 @@ public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceA
     }
 
     /// <summary>
-    /// Sets the messages of the given HelloDevice array.
+    /// Sets the messages of the given HelloDevice list.
     /// </summary>
     /// <param name="deviceMessages"></param>
     /// <param name="registry"></param>
@@ -39,11 +39,19 @@ public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceA
         var devices = registry.GetSubscribedDevices<HelloDevice>()
             .ToDictionary(d => d.Guid);
         
+        bool changed = false;
+
         foreach(var (device, message) in deviceMessages)
         {
             if (devices.TryGetValue(device.Guid, out var subscribed)) {
                 subscribed.Message = message;
+                changed = true;
             }
+        }
+
+        if (changed)
+        {
+            registry.MarkChanged();
         }
     }
 }

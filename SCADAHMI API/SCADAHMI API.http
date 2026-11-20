@@ -1,6 +1,31 @@
 @SCADAHMI_API_HostAddress = http://localhost:5207
 
-GET {{SCADAHMI_API_HostAddress}}/weatherforecast/
+### Create a HelloDevice
+POST {{SCADAHMI_API_HostAddress}}/api/devices
+Content-Type: application/json
+
+{
+  "requestId": "demo-create",
+  "payload": {
+    "message": "Hello from the API"
+  }
+}
+
+### Get the current device snapshot
+GET {{SCADAHMI_API_HostAddress}}/api/devices
 Accept: application/json
 
-###
+### Get the snapshot only when a newer version exists
+GET {{SCADAHMI_API_HostAddress}}/api/devices?since=1
+Accept: application/json
+
+### Set the message of all HelloDevices
+POST {{SCADAHMI_API_HostAddress}}/api/commands/set-message
+Content-Type: application/json
+
+{
+  "requestId": "demo-1",
+  "payload": {
+    "message": "No way!"
+  }
+}

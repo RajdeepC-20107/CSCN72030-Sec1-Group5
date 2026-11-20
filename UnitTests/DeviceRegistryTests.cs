@@ -48,4 +48,24 @@ public sealed class DeviceRegistryTests
         // Assert
         Assert.IsEmpty(list);
     }
+
+    [TestMethod]
+    public void VersionChangesOnSubscribeAndUnsubscribe()
+    {
+        // Arrange
+        DeviceRegistry deviceRegistry = new();
+        HelloDevice helloDevice = new();
+        int versionBefore = deviceRegistry.Version;
+
+        // Act & Assert
+        Assert.IsTrue(deviceRegistry.Subscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 1, deviceRegistry.Version);
+
+        // A duplicate subscribe must not bump the revision.
+        Assert.IsFalse(deviceRegistry.Subscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 1, deviceRegistry.Version);
+
+        Assert.IsTrue(deviceRegistry.Unsubscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 2, deviceRegistry.Version);
+    }
 }

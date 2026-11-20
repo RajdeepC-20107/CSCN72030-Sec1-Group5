@@ -29,4 +29,41 @@ public sealed class CommandBusTests
         Assert.AreEqual(newMessage, helloDevice1.Message);
         Assert.AreEqual(newMessage, helloDevice2.Message);
     }
+
+    [TestMethod]
+    public void RaisesCommandExecutedEventAndBumpsVersion()
+    {
+        // Arrange
+        DeviceRegistry deviceRegistry = new();
+        CommandExecutedEventArgs? captured = null;
+        int versionBefore = deviceRegistry.Version;
+
+        void Handler(object? sender, CommandExecutedEventArgs e)
+        {
+            if (ReferenceEquals(e.Registry, deviceRegistry))
+            {
+                captured = e;
+            }
+        }
+
+        CommandBus.CommandExecuted += Handler;
+
+        // Act
+        try
+        {
+            CommandBus.Publish(
+                new SetHelloDeviceCommand(),
+                new SetHelloDeviceCommandArgs("Event!"),
+                deviceRegistry);
+        }
+        finally
+        {
+            CommandBus.CommandExecuted -= Handler;
+        }
+
+        // Assert
+        Assert.IsNotNull(captured);
+        Assert.AreEqual(versionBefore + 1, captured.Version);
+        Assert.AreEqual(deviceRegistry.Version, captured.Version);
+    }
 }
