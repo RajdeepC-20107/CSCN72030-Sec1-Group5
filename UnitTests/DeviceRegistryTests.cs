@@ -19,7 +19,7 @@ public sealed class DeviceRegistryTests
         deviceRegistry.Subscribe(helloDevice2);
         deviceRegistry.Subscribe(helloDevice1);
 
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetDevicesOfType<HelloDevice>();
 
         // Assert
         Assert.HasCount(expectedListCount, list);
@@ -43,7 +43,7 @@ public sealed class DeviceRegistryTests
         deviceRegistry.Unsubscribe(helloDevice2);
         deviceRegistry.Unsubscribe(helloDevice1);
 
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetDevicesOfType<HelloDevice>();
 
         // Assert
         Assert.IsEmpty(list);

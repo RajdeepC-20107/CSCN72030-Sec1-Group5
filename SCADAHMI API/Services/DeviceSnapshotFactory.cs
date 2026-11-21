@@ -12,7 +12,7 @@ public static class DeviceSnapshotFactory
     public static DeviceSnapshotDto Create(DeviceRegistry registry, int version) =>
         new(
             version,
-            registry.GetSubscribedDevices<HelloDevice>()
+            registry.GetDevicesOfType<HelloDevice>()
                 .Select(
                     device => new DeviceStateDto(
                         device.Guid, 

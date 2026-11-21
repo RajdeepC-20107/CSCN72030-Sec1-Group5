@@ -32,7 +32,7 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
         try
         {
             IReadOnlyList<(HelloDevice, string)> devices = (
-                from d in registry.GetSubscribedDevices<HelloDevice>()
+                from d in registry.GetDevicesOfType<HelloDevice>()
                 where request.Payload.Messages.TryGetValue(d.Guid, out string? value)
                 select (d, request.Payload.Messages[d.Guid])
             ).ToList();

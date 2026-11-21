@@ -79,15 +79,21 @@ function renderSnapshot(snapshot, source) {
         input.value = device.message;
         input.setAttribute("aria-label", `Message for device ${device.id}`);
 
-        const button = document.createElement("button");
-        button.className = "small";
-        button.textContent = "Set";
-        button.addEventListener("click", () =>
+        const setButton = document.createElement("button");
+        setButton.className = "small";
+        setButton.textContent = "Set";
+        setButton.addEventListener("click", () =>
             sendMessages({ [device.id]: input.value }, `Set ${device.id.substring(0, 8)}`));
+
+        const removeButton = document.createElement("button");
+        removeButton.className = "small danger";
+        removeButton.textContent = "Remove";
+        removeButton.title = `Remove device ${device.id}`;
+        removeButton.addEventListener("click", () => removeDevice(device));
 
         const controls = document.createElement("div");
         controls.className = "device-controls";
-        controls.append(input, button);
+        controls.append(input, setButton, removeButton);
 
         row.append(id, controls);
         deviceList.appendChild(row);
@@ -122,7 +128,15 @@ async function postJson(url, body, label) {
 
 async function createDevice() {
     const message = document.getElementById("createMessage").value;
-    await postJson("/api/devices", { payload: { $type: "helloDevice", message } }, "Create device");
+    await postJson("/api/devices/create", { payload: { $type: "helloDevice", message } }, "Create device");
+}
+
+async function removeDevice(device) {
+    await postJson(
+        "/api/devices/remove",
+        { payload: { $type: "helloDevice", guid: device.id } },
+        `Remove ${device.id.substring(0, 8)}`
+    );
 }
 
 async function sendMessages(messages, label) {

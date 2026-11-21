@@ -1,13 +1,13 @@
 @SCADAHMI_API_HostAddress = http://localhost:5207
 
 ### Create a HelloDevice
-POST {{SCADAHMI_API_HostAddress}}/api/devices
+POST {{SCADAHMI_API_HostAddress}}/api/devices/create
 Content-Type: application/json
 
 {
   "requestId": "demo-create",
   "payload": {
-    $type: "helloDevice"
+    "$type": "helloDevice",
     "message": "Hello from the API"
   }
 }
@@ -30,5 +30,17 @@ Content-Type: application/json
     "messages": {
       "00000000-0000-0000-0000-000000000000": "No way!"
     }
+  }
+}
+
+### Remove a HelloDevice (ids come from GET /api/devices)
+POST {{SCADAHMI_API_HostAddress}}/api/devices/remove
+Content-Type: application/json
+
+{
+  "requestId": "demo-remove",
+  "payload": {
+    "$type": "helloDevice",
+    "guid": "00000000-0000-0000-0000-000000000000"
   }
 }

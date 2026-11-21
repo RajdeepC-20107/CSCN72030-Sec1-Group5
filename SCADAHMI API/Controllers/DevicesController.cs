@@ -5,6 +5,7 @@ using SCADAHMI_API.Contracts.Responses;
 using SCADAHMI_API.Contracts.Requests.CreateDevice;
 using SCADAHMI_API.Contracts.DTOs;
 using SCADAHMI_API.Services;
+using SCADAHMI_API.Contracts.Requests.RemoveDevice;
 
 namespace SCADAHMI_API.Controllers;
 
@@ -14,7 +15,7 @@ public class DevicesController(
     DeviceRegistry registry
 ) : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("create")]
     public IActionResult Create(CreateDeviceRequest request)
     {
         string requestId = string.IsNullOrWhiteSpace(request.RequestId)
@@ -24,13 +25,9 @@ public class DevicesController(
         // The payload's $type discriminator decides which domain manager runs.
         Device? device = request.Payload switch
         {
-            HelloDevicePayload hello => HelloDeviceManager.CreateDevice(
+            CreateHelloDevicePayload hello => HelloDeviceManager.CreateDevice(
                 new CreateHelloDeviceArgs(hello.Message), registry
             ),
-
-            // TODO:
-            // CalculatorDevicePayload calc => CalculatorDeviceManager.CreateDevice(
-            //     new CreateCalculatorDeviceArgs(calc.SomeValue), registry),
 
             _ => null
         };
@@ -48,8 +45,55 @@ public class DevicesController(
         return Ok(new ApiResponse(
             requestId,
             true,
-            DeviceStateDtoFactory.Create(device))   // no nameof(HelloDevice) here
+            DeviceStateDtoFactory.Create(device))
         );
+    }
+
+    [HttpPost("remove")]
+    public IActionResult Remove(RemoveDeviceRequest request)
+    {
+        string requestId = string.IsNullOrWhiteSpace(request.RequestId)
+            ? Guid.NewGuid().ToString()
+            : request.RequestId;
+
+        if (request.Payload is null)
+        {
+            return BadRequest(new ApiResponse(
+                requestId, false, Error: "A removal payload is required."));
+        }
+
+        // The payload's $type discriminator decides which domain manager runs.
+        bool? removed = request.Payload switch
+        {
+            RemoveHelloDevicePayload hello => HelloDeviceManager.RemoveDevice(hello.Guid, registry),
+
+            _ => null
+        };
+
+        if (removed is null)
+        {
+            return BadRequest(new ApiResponse(
+                requestId, 
+                false, 
+                Error: "Unsupported device payload type."
+            ));
+        }
+
+        if (removed is false)
+        {
+            return NotFound(new ApiResponse(
+                requestId,
+                false,
+                Error: $"No device of specified type with GUID '{request.Payload.Guid}' is registered."
+            ));
+        }
+
+        // Unsubscribing already bumped the registry version, which raises
+        // Changed and pushes a fresh snapshot to all SignalR clients.
+        return Ok(new ApiResponse(
+            requestId,
+            true
+        ));
     }
 
     [HttpGet]

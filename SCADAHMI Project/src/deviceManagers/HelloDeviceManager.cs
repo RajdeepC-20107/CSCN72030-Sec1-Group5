@@ -19,9 +19,27 @@ public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceA
         return (success) ? device : null;
     }
 
+    public static HelloDevice? GetDevice(Guid guid, DeviceRegistry? registry = null)
+    {
+        registry ??= DeviceRegistry.Instance;
+        return registry.GetDeviceOfType<HelloDevice>(guid);
+    }
+
     public static bool RemoveDevice(HelloDevice device, DeviceRegistry? registry = null)
     {
         registry ??= DeviceRegistry.Instance;
+        return registry.Unsubscribe(device);
+    }
+
+    public static bool RemoveDevice(Guid deviceGuid, DeviceRegistry? registry = null)
+    {
+        registry ??= DeviceRegistry.Instance;
+        HelloDevice? device = GetDevice(deviceGuid, registry);
+        if(device is null)
+        {
+            return false;
+        }
+
         return registry.Unsubscribe(device);
     }
 
@@ -36,7 +54,7 @@ public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceA
     )
     {
         registry ??= DeviceRegistry.Instance;
-        var devices = registry.GetSubscribedDevices<HelloDevice>()
+        var devices = registry.GetDevicesOfType<HelloDevice>()
             .ToDictionary(d => d.Guid);
         
         bool changed = false;

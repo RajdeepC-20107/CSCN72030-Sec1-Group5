@@ -20,7 +20,7 @@ public static class Demo
         deviceRegistry.Subscribe(helloDevice1);
 
         Console.WriteLine(
-            string.Join(", ", deviceRegistry.GetSubscribedDevices<HelloDevice>())
+            string.Join(", ", deviceRegistry.GetDevicesOfType<HelloDevice>())
         );
 
         deviceRegistry.Unsubscribe(helloDevice1);
@@ -28,7 +28,7 @@ public static class Demo
         deviceRegistry.Unsubscribe(helloDevice1);
 
         Console.WriteLine(
-            string.Join(", ", deviceRegistry.GetSubscribedDevices<HelloDevice>())
+            string.Join(", ", deviceRegistry.GetDevicesOfType<HelloDevice>())
         );
 
         deviceRegistry.Subscribe(helloDevice1);

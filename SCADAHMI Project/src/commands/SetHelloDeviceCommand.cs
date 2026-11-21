@@ -13,7 +13,7 @@ public sealed class SetHelloDeviceCommand
         SetHelloDeviceCommandArgs args
     ) {
         IReadOnlyList<HelloDevice> devices =
-            deviceRegistry.GetSubscribedDevices<HelloDevice>();
+            deviceRegistry.GetDevicesOfType<HelloDevice>();
 
         foreach(HelloDevice device in devices)
         {

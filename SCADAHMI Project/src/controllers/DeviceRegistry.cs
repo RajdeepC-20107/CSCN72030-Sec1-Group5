@@ -79,11 +79,42 @@ public class DeviceRegistry
     }
 
     /// <summary>
+    /// Get a subscribed device based on its GUID.
+    /// </summary>
+    /// <param name="guid"></param>
+    /// <returns>The device if found, null if not.</returns>
+    public Device? GetDevice(Guid guid)
+    {
+        devices.TryGetValue(guid, out Device? device);
+        return device;
+    }
+
+    /// <summary>
+    /// Get a subscribed device based on its GUID if the device type matches.
+    /// </summary>
+    /// <typeparam name="TDevice"></typeparam>
+    /// <param name="guid"></param>
+    /// <returns>The device if found and the type matches, null if not.</returns>
+    public TDevice? GetDeviceOfType<TDevice>(Guid guid)
+        where TDevice : Device
+    {
+        devices.TryGetValue(guid, out Device? device);
+        if(device is null)
+        {
+            return null;
+        }
+
+        return device is TDevice typed 
+            ? typed 
+            : null;
+    }
+
+    /// <summary>
     /// Get all subscribed devices of a certain type.
     /// </summary>
     /// <typeparam name="TDevice"></typeparam>
     /// <returns>A read-only list of that certain device type.</returns>
-    public IReadOnlyList<TDevice> GetSubscribedDevices<TDevice>()
+    public IReadOnlyList<TDevice> GetDevicesOfType<TDevice>()
         where TDevice : Device
     {
         return devices.Values

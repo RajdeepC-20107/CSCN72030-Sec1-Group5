@@ -58,6 +58,8 @@
     button:disabled { opacity: .5; cursor: not-allowed; }
     button.secondary { background: #475569; }
     button.secondary:hover { background: #334155; }
+    button.danger { background: #b91c1c; }
+    button.danger:hover { background: #991b1b; }
 
     ul.devices { list-style: none; padding: 0; margin: 0; }
     ul.devices li {
@@ -103,7 +105,7 @@
       <h2>Create a HelloDevice</h2>
       <label for="createMessage">Initial message</label>
       <input id="createMessage" type="text" value="Hello from the HMI" autocomplete="off">
-      <button id="createButton">POST /api/devices</button>
+      <button id="createButton">POST /api/devices/create</button>
     </section>
 
     <section class="card">
@@ -111,7 +113,7 @@
       <label for="setMessage">Message for all devices</label>
       <input id="setMessage" type="text" value="No way!" autocomplete="off">
       <button id="setButton">Apply to all devices</button>
-      <p class="hint">Or edit a single device in the Live snapshot list below.</p>
+      <p class="hint">Or edit or remove a single device in the Live snapshot list below.</p>
     </section>
 
     <section class="card">
