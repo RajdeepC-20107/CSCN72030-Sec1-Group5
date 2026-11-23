@@ -109,6 +109,13 @@ public class DeviceRegistry
             : null;
     }
 
+    public IReadOnlyList<Device> GetDevices()
+    {
+        return devices.Values
+            .OrderBy(d => d.Guid)
+            .ToList();
+    }
+
     /// <summary>
     /// Get all subscribed devices of a certain type.
     /// </summary>

@@ -8,7 +8,9 @@ public static class DeviceStateDtoFactory
 {
     public static DeviceStateDto Create(Device device) => device switch
     {
-        HelloDevice hello => new DeviceStateDto(hello.Guid, nameof(HelloDevice), hello.Message),
-        _ => new DeviceStateDto(device.Guid, device.GetType().Name, "")
+        HelloDevice hello => 
+            new HelloDeviceStateDto(hello.Guid, hello.Message),
+        _ => 
+            throw new NotSupportedException($"No wire type for {device.GetType().Name}.")
     };
 }

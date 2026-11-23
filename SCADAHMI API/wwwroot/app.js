@@ -71,24 +71,36 @@ function renderSnapshot(snapshot, source) {
 
         const id = document.createElement("span");
         id.className = "device-id";
-        id.textContent = device.id.substring(0, 8);
+        id.textContent = device.guid.substring(0, 8);
+
+        // The snapshot is now polymorphic. Only HelloDevices have the
+        // message field and message commands this client knows how to send.
+        if (device.$type !== "helloDevice") {
+            const label = document.createElement("span");
+            label.className = "empty";
+            label.textContent = `Unsupported type: ${device.$type ?? "unknown"}`;
+            row.append(id, label);
+            deviceList.appendChild(row);
+            log(`Skipping unsupported device type '${device.$type}' (${device.guid}).`);
+            continue;
+        }
 
         const input = document.createElement("input");
         input.type = "text";
         input.className = "device-input";
         input.value = device.message;
-        input.setAttribute("aria-label", `Message for device ${device.id}`);
+        input.setAttribute("aria-label", `Message for device ${device.guid}`);
 
         const setButton = document.createElement("button");
         setButton.className = "small";
         setButton.textContent = "Set";
         setButton.addEventListener("click", () =>
-            sendMessages({ [device.id]: input.value }, `Set ${device.id.substring(0, 8)}`));
+            sendMessages({ [device.guid]: input.value }, `Set ${device.guid.substring(0, 8)}`));
 
         const removeButton = document.createElement("button");
         removeButton.className = "small danger";
         removeButton.textContent = "Remove";
-        removeButton.title = `Remove device ${device.id}`;
+        removeButton.title = `Remove device ${device.guid}`;
         removeButton.addEventListener("click", () => removeDevice(device));
 
         const controls = document.createElement("div");
@@ -134,8 +146,8 @@ async function createDevice() {
 async function removeDevice(device) {
     await postJson(
         "/api/devices/remove",
-        { payload: { $type: "helloDevice", guid: device.id } },
-        `Remove ${device.id.substring(0, 8)}`
+        { payload: { $type: "helloDevice", guid: device.guid } },
+        `Remove ${device.guid.substring(0, 8)}`
     );
 }
 
@@ -148,15 +160,16 @@ async function sendMessages(messages, label) {
 }
 
 async function setMessage() {
-    if (currentDevices.length === 0) {
-        log("No devices to update yet - create one first.");
-        return;
-    }
-
     const message = document.getElementById("setMessage").value;
     const messages = {};
     for (const device of currentDevices) {
-        messages[device.id] = message;
+        if (device.$type !== "helloDevice") continue;
+        messages[device.guid] = message;
+    }
+
+    if (Object.keys(messages).length === 0) {
+        log("No HelloDevices to update yet - create one first.");
+        return;
     }
 
     await sendMessages(messages, "Set all messages");

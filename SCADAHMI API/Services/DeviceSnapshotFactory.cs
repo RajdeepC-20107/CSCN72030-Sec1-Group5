@@ -12,14 +12,8 @@ public static class DeviceSnapshotFactory
     public static DeviceSnapshotDto Create(DeviceRegistry registry, int version) =>
         new(
             version,
-            registry.GetDevicesOfType<HelloDevice>()
-                .Select(
-                    device => new DeviceStateDto(
-                        device.Guid, 
-                        nameof(HelloDevice), 
-                        device.Message
-                    )
-                )
+            registry.GetDevices()
+                .Select(DeviceStateDtoFactory.Create)
                 .ToList()
         );
 }
