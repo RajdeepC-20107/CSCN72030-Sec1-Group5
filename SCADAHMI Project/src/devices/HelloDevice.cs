@@ -7,6 +7,8 @@ namespace SCADAHMI_Project;
 /// </summary>
 public sealed class HelloDevice : Device
 {
+    public override string Name { get; set; } = nameof(HelloDevice);
+
     /// <summary>
     /// The message of the HelloDevice.
     /// </summary>
