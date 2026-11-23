@@ -54,22 +54,28 @@ public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceA
     )
     {
         registry ??= DeviceRegistry.Instance;
-        var devices = registry.GetDevicesOfType<HelloDevice>()
-            .ToDictionary(d => d.Guid);
-        
-        bool changed = false;
+        CommandBus.Publish(
+            new SetHelloDeviceCommand(),
+            new SetHelloDeviceCommandArgs(
+                deviceMessages
+            ),
+            registry
+        );
+    }
 
-        foreach(var (device, message) in deviceMessages)
-        {
-            if (devices.TryGetValue(device.Guid, out var subscribed)) {
-                subscribed.Message = message;
-                changed = true;
-            }
-        }
-
-        if (changed)
-        {
-            registry.MarkChanged();
-        }
+    /// <summary>
+    /// Prints the messages of all subscribed HelloDevices.
+    /// </summary>
+    /// <param name="registry"></param>
+    public static void PrintHelloDeviceMessages(
+        DeviceRegistry? registry = null
+    )
+    {
+        registry ??= DeviceRegistry.Instance;
+        CommandBus.Publish(
+            new PrintHelloDeviceCommand(),
+            new NoCommandArgs(),
+            registry
+        );
     }
 }

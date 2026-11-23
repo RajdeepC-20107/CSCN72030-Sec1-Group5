@@ -36,7 +36,9 @@ public static class Demo
 
         CommandBus.Publish(
             new SetHelloDeviceCommand(),
-            new SetHelloDeviceCommandArgs("No way!"),
+            new SetHelloDeviceCommandArgs(
+                [(helloDevice1, "No way!")]
+            ),
             deviceRegistry
         );
     }

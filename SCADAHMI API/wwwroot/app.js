@@ -162,6 +162,11 @@ async function setMessage() {
     await sendMessages(messages, "Set all messages");
 }
 
+async function printMessages() {
+    log("Print messages: sending request...");
+    await postJson("/api/commands/print-messages", {}, "Print messages");
+}
+
 async function checkChanges() {
     try {
         const response = await fetch(`/api/devices?since=${lastVersion}`, {
@@ -186,6 +191,7 @@ async function checkChanges() {
 
 document.getElementById("createButton").addEventListener("click", createDevice);
 document.getElementById("setButton").addEventListener("click", setMessage);
+document.getElementById("printButton").addEventListener("click", printMessages);
 document.getElementById("checkButton").addEventListener("click", checkChanges);
 
 start();

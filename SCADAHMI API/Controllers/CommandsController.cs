@@ -16,5 +16,12 @@ public class CommandsController(CommandDispatcher dispatcher) : ControllerBase
         ApiResponse response = dispatcher.Dispatch(request);
         return response.Success ? Ok(response) : BadRequest(response);
     }
+
+    [HttpPost("print-messages")]
+    public IActionResult PrintMessages(PrintHelloDeviceMessageRequest request)
+    {
+        ApiResponse response = dispatcher.Dispatch(request);
+        return response.Success ? Ok(response) : BadRequest(response);
+    }
 }
 

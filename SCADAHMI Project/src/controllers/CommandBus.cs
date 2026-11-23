@@ -37,19 +37,21 @@ public static class CommandBus
     public static void Publish<TCommand, TCommandArgs>(
         TCommand command,
         TCommandArgs commandArgs,
-        DeviceRegistry? registry = null
+        DeviceRegistry registry
     )
         where TCommandArgs : CommandArgs
         where TCommand : IDeviceCommand<TCommandArgs>
     {
         lock (gate)
         {
-            registry ??= DeviceRegistry.Instance;
             messageBus.Enqueue((command, commandArgs));
             (TCommand, TCommandArgs) poppedCommand = ((TCommand, TCommandArgs))messageBus.Dequeue();
-            poppedCommand.Item1.Execute(registry, poppedCommand.Item2);
+            bool versionChange = poppedCommand.Item1.Execute(registry, poppedCommand.Item2);
 
-            registry.MarkChanged();
+            if(versionChange)
+            {
+                registry.MarkChanged();
+            }
             CommandExecuted?.Invoke(
                 null,
                 new CommandExecutedEventArgs(

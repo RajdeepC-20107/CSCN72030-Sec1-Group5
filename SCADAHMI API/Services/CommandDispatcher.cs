@@ -13,11 +13,16 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
 {
     public ApiResponse Dispatch(CommandRequest request) => request switch
     {
-        SetHelloDeviceMessageRequest setMessage => SetHelloDeviceMessage(setMessage),
-        _ => new ApiResponse(
-            Normalize(request.RequestId),
-            false,
-            Error: $"Unsupported command request: {request.GetType().Name}")
+        SetHelloDeviceMessageRequest setMessage => 
+            SetHelloDeviceMessage(setMessage),
+        PrintHelloDeviceMessageRequest printMessages => 
+            PrintHelloDeviceMessages(printMessages),
+        _ => 
+            new ApiResponse(
+                Normalize(request.RequestId),
+                false,
+                Error: $"Unsupported command request: {request.GetType().Name}"
+            )
     };
 
     private ApiResponse SetHelloDeviceMessage(SetHelloDeviceMessageRequest request)
@@ -40,6 +45,24 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
 
             HelloDeviceManager.SetHelloDeviceMessages(
                 devices.ToList(),
+                registry
+            );
+
+            return new ApiResponse(requestId, true);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse(requestId, false, Error: ex.Message);
+        }
+    }
+
+    private ApiResponse PrintHelloDeviceMessages(PrintHelloDeviceMessageRequest request)
+    {
+        string requestId = Normalize(request.RequestId);
+
+        try
+        {
+            HelloDeviceManager.PrintHelloDeviceMessages(
                 registry
             );
 

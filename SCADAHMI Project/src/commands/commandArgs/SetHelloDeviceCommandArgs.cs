@@ -7,5 +7,5 @@ namespace SCADAHMI_Project;
 /// </summary>
 /// <param name="Message"></param>
 public sealed record SetHelloDeviceCommandArgs(
-    string Message = "Hello World!"
+    List<(HelloDevice, string)> DeviceMessages
 ) : CommandArgs;

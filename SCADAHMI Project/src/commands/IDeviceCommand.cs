@@ -14,5 +14,6 @@ public interface IDeviceCommand<TCommandArgs> : ICommand
     /// </summary>
     /// <param name="deviceRegistry"></param>
     /// <param name="args"></param>
-    void Execute(DeviceRegistry deviceRegistry, TCommandArgs args);
+    /// <returns>Whether a version change should be called or not.</returns>
+    bool Execute(DeviceRegistry deviceRegistry, TCommandArgs args);
 }

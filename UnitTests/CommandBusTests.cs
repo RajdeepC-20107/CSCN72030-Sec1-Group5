@@ -21,7 +21,10 @@ public sealed class CommandBusTests
         // Act
         CommandBus.Publish(
             new SetHelloDeviceCommand(),
-            new SetHelloDeviceCommandArgs(newMessage),
+            new SetHelloDeviceCommandArgs(
+                [(helloDevice1, newMessage),
+                (helloDevice2, newMessage)]
+            ),
             deviceRegistry
         );
 
@@ -30,11 +33,15 @@ public sealed class CommandBusTests
         Assert.AreEqual(newMessage, helloDevice2.Message);
     }
 
+    // This test would be good to use Moq on
+    // But for the sake of getting it done, I have not
     [TestMethod]
     public void RaisesCommandExecutedEventAndBumpsVersion()
     {
         // Arrange
         DeviceRegistry deviceRegistry = new();
+        HelloDevice helloDevice = new();
+        deviceRegistry.Subscribe(helloDevice);
         CommandExecutedEventArgs? captured = null;
         int versionBefore = deviceRegistry.Version;
 
@@ -53,7 +60,9 @@ public sealed class CommandBusTests
         {
             CommandBus.Publish(
                 new SetHelloDeviceCommand(),
-                new SetHelloDeviceCommandArgs("Event!"),
+                new SetHelloDeviceCommandArgs(
+                    [(helloDevice, "Event!")]
+                ),
                 deviceRegistry);
         }
         finally

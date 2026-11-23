@@ -33,6 +33,14 @@ Content-Type: application/json
   }
 }
 
+### Print all HelloDevice messages to the API server console
+POST {{SCADAHMI_API_HostAddress}}/api/commands/print-messages
+Content-Type: application/json
+
+{
+  "requestId": "demo-print"
+}
+
 ### Remove a HelloDevice (ids come from GET /api/devices)
 POST {{SCADAHMI_API_HostAddress}}/api/devices/remove
 Content-Type: application/json

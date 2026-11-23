@@ -8,16 +8,23 @@ namespace SCADAHMI_Project;
 public sealed class SetHelloDeviceCommand
     : IDeviceCommand<SetHelloDeviceCommandArgs>
 {
-    void IDeviceCommand<SetHelloDeviceCommandArgs>.Execute(
+    bool IDeviceCommand<SetHelloDeviceCommandArgs>.Execute(
         DeviceRegistry deviceRegistry, 
         SetHelloDeviceCommandArgs args
     ) {
-        IReadOnlyList<HelloDevice> devices =
-            deviceRegistry.GetDevicesOfType<HelloDevice>();
+        var devices = deviceRegistry.GetDevicesOfType<HelloDevice>()
+            .ToDictionary(d => d.Guid);
+        
+        bool changed = false;
 
-        foreach(HelloDevice device in devices)
+        foreach(var (device, message) in args.DeviceMessages)
         {
-            device.Message = args.Message;
+            if (devices.TryGetValue(device.Guid, out var subscribed)) {
+                subscribed.Message = message;
+                changed = true;
+            }
         }
+
+        return changed;
     }
 }

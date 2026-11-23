@@ -61,6 +61,21 @@
     button.danger { background: #b91c1c; }
     button.danger:hover { background: #991b1b; }
 
+    .card.print-card {
+      background: linear-gradient(160deg, #f5f3ff, #ede9fe);
+      border-color: #ddd6fe;
+      text-align: center;
+    }
+    .print-card h2 { color: #5b21b6; }
+    .print-icon { font-size: 2.2rem; line-height: 1; margin: .25rem 0 .5rem; }
+    button.print {
+      display: block; width: 100%; margin-top: .75rem;
+      padding: 1.25rem 1rem; font-size: 1.1rem; letter-spacing: .02em;
+      background: #7c3aed; box-shadow: 0 4px 0 #5b21b6;
+    }
+    button.print:hover { background: #6d28d9; }
+    button.print:active { transform: translateY(3px); box-shadow: 0 1px 0 #5b21b6; }
+
     ul.devices { list-style: none; padding: 0; margin: 0; }
     ul.devices li {
       display: flex; justify-content: space-between; gap: 1rem; align-items: center;
@@ -116,6 +131,13 @@
       <p class="hint">Or edit or remove a single device in the Live snapshot list below.</p>
     </section>
 
+    <section class="card print-card">
+      <h2>Print device messages</h2>
+      <div class="print-icon" aria-hidden="true">&#128424;</div>
+      <p class="hint">Writes every HelloDevice message to the API server console.</p>
+      <button id="printButton" class="print">Print all messages</button>
+    </section>
+
     <section class="card">
       <h2>Conditional poll</h2>
       <p style="margin:0; font-size:.85rem; color:#56657a;">
@@ -139,6 +161,6 @@
   </main>
 
   <script src="./lib/signalr/signalr.min.js"></script>
-  <script src="./app.js"></script>
+  <script src="./app.js?v=2"></script>
 </body>
 </html>
