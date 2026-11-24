@@ -340,7 +340,7 @@ public sealed class SetLightsRGBCommand
     }
 }
 ```
-After the command has been created, you must reciprocate the command to its associated manager. Nothing stops commands from being published to from the API itself, but these managers are the last change to add any sort of logic that must run before and after a command is published, while simply being more organized.
+After the command has been created, you must reciprocate the command to its associated manager. Nothing stops commands from being published to from the API itself, but these managers are the last change to add any sort of logic that must run before and after a command is published, while simply being more organized. It is **highly** recommended that you use device managers to publish commands, not the API code itself.
 ```C#
 //Newly added method to LightsManager.cs
 public static void SetLightsRGB(
@@ -480,18 +480,61 @@ Now all that's left is to use this API
 
 ### Tier 1: The frontend
 
-And this is where my knowledge no longer can help, because I was not responsible for writing the web frontend. I had OpenCode write it!
+And this is where my knowledge no longer can help, because I was not responsible for writing the web frontend. I had OpenCode write it! And I've also had OpenCode write out the rest of the section.
 
-Firstly, on whatever frontend you make, you will need to set up SignalR to receive server-to-client pushes. After you do that, you won't need to touch it anymore.
+Firstly, on whatever frontend you make, you will need to set up SignalR to receive server-to-client pushes. The server already maps `/hub`, pushes a snapshot to each client the moment it connects, and broadcasts a new one whenever the device registry version changes. After you have that subscription in place, you won't need to touch the connection itself again — but you will need to teach the renderer about any new device type you add, otherwise it just shows up as "Unsupported".
 
-Secondly, the API has been made to be frontend-agnostic, meaning that it can be switched from a website to Android without changing any of this C# backend code.
+The client subscribes with `connection.on("devicesChanged", ...)`. The method is called `DevicesChanged` in C#, but SignalR lowercases the first letter of hub method names on the wire, so JavaScript has to listen for `devicesChanged`. That is separate from the JSON naming policy, which is what turns C# properties like `MinimumBrightness` into `minimumBrightness`.
 
-In the words of OpenCode on how the current web frontend works...
+Secondly, the API has been made to be frontend-agnostic, meaning that it can be switched from a website to Android without changing any of this C# backend code. One practical difference: the web client is served by the API itself, so it can use relative URLs like `/api/devices/create`. An Android app is a separate process and needs an absolute host, plus an `INTERNET` permission and cleartext traffic allowed if you stick to plain HTTP.
 
-"Everything client-side lives in `SCADAHMI API/wwwroot`: `index.html` holds the cards, inputs and buttons, while `app.js` holds all the SignalR and fetch logic. Because the API serves these files itself, every URL is relative and there is no host or port to configure.
+The web client itself is just two files under `SCADAHMI API/wwwroot`: `index.html` holds the cards, inputs and buttons, and `app.js` holds all the SignalR and fetch logic. Every button is a `fetch` POST funnelled through one `postJson` helper, and the live snapshot list is rebuilt from whatever snapshot arrives — whether that came from a push or from the conditional `GET /api/devices?since=N` poll (which returns `304 Not Modified` when nothing changed).
 
-"SignalR needed no extra work on our side. The server already maps `/hub`, pushes a snapshot to each client when it connects, and broadcasts a new one whenever the device registry version changes. The client only subscribes with `connection.on("devicesChanged", ...)`. Note the name is `DevicesChanged` in C# but `devicesChanged` in JavaScript, because the API serializes with camelCase.
+#### Passing JSON from the frontend to the backend
 
-"Every button is a `fetch` POST to an API controller, funnelled through a single `postJson` helper that generates a `requestId`, serializes the body as JSON, and logs the `ApiResponse` envelope. Request properties are the camelCased names from the C# records, plus the `$type` discriminator (`helloDevice` or `lights`) that must match the polymorphic JSON strings exactly.
+There is one envelope for every POST, so you never need to go digging through the C# request records just to work out what shape to send:
 
-"Adding a device type to the UI means teaching `renderSnapshot` to branch on `device.$type` and render that type's fields. The remove button must forward the device's own `$type` rather than a hardcoded value, and devices must be addressed by `device.guid` (never `device.id`). After any `app.js` change, bump the cache buster in `index.html` (`app.js?v=3`) so browsers reload the new script."
+```json
+{
+  "requestId": "any-unique-string",
+  "payload": { ... }
+}
+```
+
+`requestId` is optional — the server generates one when it is blank — but sending it makes it much easier to match a request to its log entry. Only the `payload` changes per endpoint. Shown are the endpoints that exist as of this README.md being written:
+
+| Endpoint | `payload` |
+|---|---|
+| `POST /api/devices/create` | `{ "$type": "helloDevice", "message": "..." }` or `{ "$type": "lights", "minimumBrightness": 10, "maximumBrightness": 100, "red": 255, "green": 255, "blue": 255 }` |
+| `POST /api/devices/remove` | `{ "$type": "lights", "guid": "..." }` — use the removed device's own discriminator |
+| `POST /api/commands/set-message` | `{ "messages": { "<guid>": "new text" } }` |
+| `POST /api/commands/set-lights-rgb` | `{ "lights": ["<guid>"], "green": 10 }` — only the channels you supply change |
+| `POST /api/commands/print-messages` | omit `payload` entirely |
+
+There are copy-pasteable samples for all of these in `SCADAHMI API.http`.
+
+The camelCase property names are just `System.Text.Json` doing its job on the PascalCase C# records, so `minimumBrightness` binds to `MinimumBrightness`. The exception is the discriminator: `$type` is a literal property name and its values (`"helloDevice"`, `"lights"`) are hard-coded strings, so those must be typed exactly. A capital `"Lights"` will not work even though a capital `Red` would bind fine. Anything left out or sent as `null` falls back to the device default on creation, and for RGB it means "leave this channel alone".
+
+Here is the helper the web client uses. Copy it and each button only has to supply its payload:
+
+```js
+async function postJson(url, body, label) {
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId: crypto.randomUUID(), ...body })
+    });
+    const result = await response.json();
+    // result = { requestId, success, data, error }
+}
+```
+
+`response.ok` tells you the HTTP status (200 on success, 400 or 404 on failure); `result.success` repeats it in the body and `result.error` carries the message you show the user.
+
+#### Rendering the snapshot
+
+`renderSnapshot` branches on `device.$type` — that is the whole trick. HelloDevices get a text input and a Set button; Lights get three number inputs for red, green and blue plus a Set RGB button that posts to `/api/commands/set-lights-rgb`. Each Lights row also has a small square that takes its colour from the pushed RGB values, which is the easiest way to see a SignalR push actually land.
+
+Two things that are easy to get wrong: devices are addressed by `device.guid` (there is no `device.id`), and the Remove button must forward that device's own `$type`. Hardcoding `"helloDevice"` there works right up until the first time you try to remove a Lights device.
+
+Finally, after any change to `app.js`, bump the cache-busting query in `index.html` (`app.js?v=5` as of writing this), otherwise the browser will happily keep serving the old script and you will spend a while wondering why nothing changed.
