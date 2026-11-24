@@ -1,7 +1,7 @@
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Record describing no arguments.
+/// Command arguments for renaming a device.
 /// </summary>
 public record RenameDeviceCommandArgs(
     Dictionary<Device, string> DeviceNames

@@ -21,7 +21,10 @@ public static class CommandBus
     private static readonly Lock gate = new();
 
     /// <summary>
-    /// Notifies listeners (such as the SignalR notifier) that a command ran.
+    /// Raised after every published command finishes, even when it changed nothing.
+    /// Carries the command, its arguments, the registry, and the revision after
+    /// execution. SignalR broadcasts use DeviceRegistry.Changed instead, so this
+    /// is for observers such as logging or tests.
     /// </summary>
     public static event EventHandler<CommandExecutedEventArgs>? CommandExecuted;
 

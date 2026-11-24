@@ -364,7 +364,7 @@ And with that done, we can go to the API project. In `SCADAHMI API/Contracts/Req
 public sealed record SetLightsRGBRequest(
     string? RequestId,
     SetLightsRGBPayload Payload
-) : CommandRequest(RequestId);
+) : ApiRequest(RequestId);
 
 public sealed record SetLightsRGBPayload(
     HashSet<Guid> Lights,
@@ -393,7 +393,7 @@ public class CommandsController(CommandDispatcher dispatcher) : ControllerBase
     public IActionResult SetLightsRGB(SetLightsRGBRequest request)
         => StandardDispatch(request);
 
-    private IActionResult StandardDispatch(CommandRequest request)
+    private IActionResult StandardDispatch(ApiRequest request)
     {
         ApiResponse response = dispatcher.Dispatch(request);
         return response.Success ? Ok(response) : BadRequest(response);
@@ -407,7 +407,7 @@ namespace SCADAHMI_API.Services;
 public sealed class CommandDispatcher(DeviceRegistry registry)
 {
     // TODO: Add ability to dispatch rename commands
-    public ApiResponse Dispatch(CommandRequest request) => request switch
+    public ApiResponse Dispatch(ApiRequest request) => request switch
     {
         SetHelloDeviceMessageRequest setMessage => 
             SetHelloDeviceMessage(setMessage),

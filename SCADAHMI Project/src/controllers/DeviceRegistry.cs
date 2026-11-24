@@ -19,6 +19,9 @@ public class DeviceRegistry
     /// </summary>
     private readonly ConcurrentDictionary<Guid, Device> devices = new();
 
+    /// <summary>
+    /// The version of the DeviceRegistry.
+    /// </summary>
     private int version;
 
     /// <summary>
@@ -109,6 +112,10 @@ public class DeviceRegistry
             : null;
     }
 
+    /// <summary>
+    /// Gets all subscribed devices.
+    /// </summary>
+    /// <returns>A read-only list of all devices.</returns>
     public IReadOnlyList<Device> GetDevices()
     {
         return devices.Values

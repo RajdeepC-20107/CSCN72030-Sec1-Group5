@@ -1,12 +1,15 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SCADAHMI_API.Services;
 using SCADAHMI_API.Contracts.Responses;
 using SCADAHMI_API.Contracts.Requests;
-using Microsoft.AspNetCore.Http.Metadata;
+using SCADAHMI_API.Contracts.Requests.Command;
 
 namespace SCADAHMI_API.Controllers;
 
+/// <summary>
+/// The API controller for posting/publishing existing commands.
+/// </summary>
+/// <param name="dispatcher"></param>
 [Route("api/[controller]")]
 [ApiController]
 public class CommandsController(CommandDispatcher dispatcher) : ControllerBase
@@ -32,7 +35,7 @@ public class CommandsController(CommandDispatcher dispatcher) : ControllerBase
     /// </summary>
     /// <param name="request"></param>
     /// <returns>HTTP OK if dispatch succeeds, HTTP BadRequest if not.</returns>
-    private IActionResult StandardDispatch(CommandRequest request)
+    private IActionResult StandardDispatch(ApiRequest request)
     {
         ApiResponse response = dispatcher.Dispatch(request);
         return response.Success ? Ok(response) : BadRequest(response);

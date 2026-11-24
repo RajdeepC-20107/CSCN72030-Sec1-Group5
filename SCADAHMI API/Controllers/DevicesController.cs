@@ -1,20 +1,31 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SCADAHMI_Project;
 using SCADAHMI_API.Contracts.Responses;
 using SCADAHMI_API.Contracts.Requests.CreateDevice;
-using SCADAHMI_API.Contracts.DTOs;
 using SCADAHMI_API.Services;
 using SCADAHMI_API.Contracts.Requests.RemoveDevice;
 
 namespace SCADAHMI_API.Controllers;
 
+/// <summary>
+/// The API controller for creating, removing, and getting devices
+/// and current device state.
+/// </summary>
+/// <param name="registry"></param>
 [Route("api/[controller]")]
 [ApiController]
 public class DevicesController(
     DeviceRegistry registry
 ) : ControllerBase
 {
+    /// <summary>
+    /// Create a device of specified type.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns>
+    /// HTTP 200 Ok 
+    /// or HTTP 400 Bad Request upon an unsupported or invalid payload.
+    /// </returns>
     [HttpPost("create")]
     public IActionResult Create(CreateDeviceRequest request)
     {
@@ -54,6 +65,15 @@ public class DevicesController(
         );
     }
 
+    /// <summary>
+    /// Remove a device of specified type.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns>
+    /// HTTP 200 Ok, 
+    /// HTTP 400 Bad Request upon an unsupported or lack of payload, 
+    /// or HTTP 404 Not Found if no device was removed.
+    /// </returns>
     [HttpPost("remove")]
     public IActionResult Remove(RemoveDeviceRequest request)
     {
@@ -101,6 +121,11 @@ public class DevicesController(
         ));
     }
 
+    /// <summary>
+    /// Get the changes in device registry version since the version specified.
+    /// </summary>
+    /// <param name="since"></param>
+    /// <returns>HTTP 200 Ok or HTTP 304 Not Modified</returns>
     [HttpGet]
     public IActionResult Get([FromQuery] int since = 0)
     {

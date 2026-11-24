@@ -3,7 +3,7 @@ using System;
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Command to set the specified Lights RGB values.
+/// Command to set the specified Lights' RGB values.
 /// </summary>
 public sealed class SetLightsRGBCommand
     : IDeviceCommand<SetLightsRGBCommandArgs>

@@ -16,7 +16,7 @@ public sealed class HelloDevice : Device
 
     /// <summary>
     /// Supposedly, Devices will know how to affect and set their own values.
-    /// This would be called via a command.Execute() method.
+    /// This is called via the PrintHelloDeviceCommand.Execute() method.
     /// Ex. If a speaker that is directed to B2 must now direct to F3,
     ///     a method like this with fed arguments will know how to 
     ///     change its variables and apply calculations as required.

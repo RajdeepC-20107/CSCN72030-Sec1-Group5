@@ -47,6 +47,15 @@ public class LightsManager : IDeviceManager<Lights, CreateLightsArgs>
         return registry.Unsubscribe(device);
     }
 
+    /// <summary>
+    /// Sets the RGB value of each light.
+    /// Any null RGB fields are not affected.
+    /// </summary>
+    /// <param name="lights"></param>
+    /// <param name="red"></param>
+    /// <param name="green"></param>
+    /// <param name="blue"></param>
+    /// <param name="registry"></param>
     public static void SetLightsRGB(
         List<Lights> lights, 
         byte? red, 

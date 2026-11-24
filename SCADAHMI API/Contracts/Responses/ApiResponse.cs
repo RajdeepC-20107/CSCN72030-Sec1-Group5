@@ -1,7 +1,7 @@
 namespace SCADAHMI_API.Contracts.Responses;
 
 /// <summary>
-/// Uniform response envelope returned by command endpoints.
+/// Uniform response envelope returned by the API endpoints.
 /// </summary>
 public sealed record ApiResponse(
     string RequestId,

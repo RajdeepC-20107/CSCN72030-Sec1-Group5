@@ -1,8 +1,8 @@
-namespace SCADAHMI_API.Contracts.Requests;
+namespace SCADAHMI_API.Contracts.Requests.Command;
 
 /// <summary>
-/// Request envelope for setting the message of all HelloDevices.
+/// Request envelope for printing the message of all HelloDevices.
 /// </summary>
 public sealed record PrintHelloDeviceMessageRequest(
     string? RequestId
-) : CommandRequest(RequestId);
+) : ApiRequest(RequestId);

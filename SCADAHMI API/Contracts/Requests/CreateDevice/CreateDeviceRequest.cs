@@ -1,3 +1,5 @@
+using SCADAHMI_API.Contracts.Requests.Command;
+
 namespace SCADAHMI_API.Contracts.Requests.CreateDevice;
 
 /// <summary>
@@ -6,4 +8,4 @@ namespace SCADAHMI_API.Contracts.Requests.CreateDevice;
 public sealed record CreateDeviceRequest(
     string? RequestId,
     CreateDevicePayload? Payload
-) : CommandRequest(RequestId);
+) : ApiRequest(RequestId);

@@ -1,3 +1,5 @@
+using SCADAHMI_API.Contracts.Requests.Command;
+
 namespace SCADAHMI_API.Contracts.Requests.RemoveDevice;
 
 /// <summary>
@@ -6,4 +8,4 @@ namespace SCADAHMI_API.Contracts.Requests.RemoveDevice;
 public sealed record RemoveDeviceRequest(
     string? RequestId,
     RemoveDevicePayload? Payload
-) : CommandRequest(RequestId);
+) : ApiRequest(RequestId);

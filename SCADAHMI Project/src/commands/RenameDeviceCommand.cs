@@ -3,7 +3,7 @@ using System;
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Command to set all HelloDevices' message values.
+/// Command to set the name of a device.
 /// </summary>
 public sealed class RenameDeviceCommand
     : IDeviceCommand<RenameDeviceCommandArgs>

@@ -3,7 +3,7 @@ using System;
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Command to set all HelloDevices' message values.
+/// Command to print all HelloDevices' message values.
 /// </summary>
 public sealed class PrintHelloDeviceCommand
     : IDeviceCommand<NoCommandArgs>
@@ -17,7 +17,7 @@ public sealed class PrintHelloDeviceCommand
 
         foreach(HelloDevice device in devices)
         {
-            Console.WriteLine(device.Message);
+            device.PrintMessage();
         }
 
         return false;
