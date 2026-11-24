@@ -18,6 +18,8 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
             SetHelloDeviceMessage(setMessage),
         PrintHelloDeviceMessageRequest printMessages => 
             PrintHelloDeviceMessages(printMessages),
+        SetLightsRGBRequest lightsRGB => 
+            SetLightsRGB(lightsRGB),
         _ => 
             new ApiResponse(
                 Normalize(request.RequestId),
@@ -64,6 +66,41 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
         try
         {
             HelloDeviceManager.PrintHelloDeviceMessages(
+                registry
+            );
+
+            return new ApiResponse(requestId, true);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse(requestId, false, Error: ex.Message);
+        }
+    }
+
+    private ApiResponse SetLightsRGB(SetLightsRGBRequest request)
+    {
+        string requestId = Normalize(request.RequestId);
+
+        if (request.Payload?.Lights is null || request.Payload.Lights.Count == 0)
+        {
+            return new ApiResponse(requestId, false, Error: "payload and/or guids must not be empty.");
+        }
+
+        try
+        {
+            IReadOnlyList<Lights> lights = (
+                from d in registry.GetDevicesOfType<Lights>()
+                join entry in request.Payload.Lights 
+                    on d.Guid equals entry
+                select d
+            ).ToList();
+
+
+            LightsManager.SetLightsRGB(
+                lights.ToList(),
+                request.Payload.Red,
+                request.Payload.Green,
+                request.Payload.Blue,
                 registry
             );
 

@@ -3,7 +3,7 @@ using System;
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Command to set all HelloDevices' message values.
+/// Command to set the specified HelloDevices' message values.
 /// </summary>
 public sealed class SetHelloDeviceCommand
     : IDeviceCommand<SetHelloDeviceCommandArgs>
@@ -19,7 +19,8 @@ public sealed class SetHelloDeviceCommand
 
         foreach(var (device, message) in args.DeviceMessages)
         {
-            if (devices.TryGetValue(device.Guid, out var subscribed)) {
+            if (devices.TryGetValue(device.Guid, out var subscribed)
+                && subscribed.Message != message) {
                 subscribed.Message = message;
                 changed = true;
             }

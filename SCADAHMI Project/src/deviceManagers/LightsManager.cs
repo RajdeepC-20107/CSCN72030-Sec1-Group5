@@ -46,4 +46,20 @@ public class LightsManager : IDeviceManager<Lights, CreateLightsArgs>
 
         return registry.Unsubscribe(device);
     }
+
+    public static void SetLightsRGB(
+        List<Lights> lights, 
+        byte? red, 
+        byte? green, 
+        byte? blue,
+        DeviceRegistry? registry = null
+    )
+    {
+        registry ??= DeviceRegistry.Instance;
+        CommandBus.Publish(
+            new SetLightsRGBCommand(),
+            new SetLightsRGBCommandArgs(lights, red, green, blue),
+            registry
+        );
+    }
 }

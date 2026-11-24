@@ -23,6 +23,10 @@ public class CommandsController(CommandDispatcher dispatcher) : ControllerBase
     public IActionResult PrintMessages(PrintHelloDeviceMessageRequest request)
         => StandardDispatch(request);
 
+    [HttpPost("set-lights-rgb")]
+    public IActionResult SetLightsRGB(SetLightsRGBRequest request)
+        => StandardDispatch(request);
+
     /// <summary>
     /// This method exists since every HttpPost was the same.
     /// </summary>

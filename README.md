@@ -27,7 +27,7 @@ local host link.
 
 This is me writing a live documentation of how I added the lights device.
 
-Some prior information: This process comes in three tiers, with the upper tier requiring to repeat the actions of all previous tiers. Starting with the highest tier:
+Some prior information: This process comes in three tiers, with the upper tier requiring to repeat the actions of all previous tiers. Additionally, affecting a higher tier will have a decent change of impacting the lower tiers. Starting with the highest tier:
 
 ### Tier 3: Adding a device
 
@@ -164,7 +164,7 @@ public static class DeviceStateDtoFactory
     };
 }
 ```
-Next, you must go under `SCADAHMI API/Requests`. Two folders are relevant: `CreateDevice` and `RemoveDevice`. Here, you must create a device-specific payload for device creation and removal, as well as add the json polymorphism capability to the base payload classes.
+Next, you must go under `SCADAHMI API/Contracts/Requests`. Two folders are relevant: `CreateDevice` and `RemoveDevice`. Here, you must create a device-specific payload for device creation and removal, as well as add the json polymorphism capability to the base payload classes.
 ```C#
 public sealed record CreateLightsPayload(
     ushort? MinimumBrightness,
@@ -283,3 +283,215 @@ But of course, that is only the first of three tiers.
 
 ### Tier 2: Adding commands for the device
 
+The properties that each device have are affected by commands which are published to `SCADAHMI Project/src/controllers/CommandBus.cs`. As of writing this, the command bus being used is syncrhonous. When it will be changed to asynchronous? Who knows, if ever.
+
+For the README.md here, I'll only focus on one command. There's going to be a ton of commands to add per device, making this the longest part.
+
+The first step is to create your new command under `SCADAHMI Project/src/commands`. You can go an additional folder down to `commandArgs` to create command arguments to pass in with the command you're creating. As well, commands must return whether they actually successfully made a change or not. This is because the program uses versioning.
+```C#
+public record SetLightsRGBCommandArgs(
+    List<Lights> Lights,
+    byte? Red,
+    byte? Green,
+    byte? Blue
+) : CommandArgs;
+```
+```C#
+public sealed class SetLightsRGBCommand
+    : IDeviceCommand<SetLightsRGBCommandArgs>
+{
+    bool IDeviceCommand<SetLightsRGBCommandArgs>.Execute(
+        DeviceRegistry deviceRegistry, 
+        SetLightsRGBCommandArgs args
+    ) {
+        if(args.Red is null && args.Green is null && args.Blue is null)
+        {
+            return false;
+        }
+
+        var devices = deviceRegistry.GetDevicesOfType<Lights>()
+            .ToDictionary(d => d.Guid);
+        
+        bool changed = false;
+
+        foreach(Lights device in args.Lights)
+        {
+            if (devices.TryGetValue(device.Guid, out var subscribed)) 
+            {
+                if(args.Red is not null && subscribed.Red != args.Red)
+                {
+                    subscribed.Red = (byte)args.Red;
+                    changed = true;
+                }
+                if(args.Green is not null && subscribed.Green != args.Green)
+                {
+                    subscribed.Green = (byte)args.Green;
+                    changed = true;
+                }
+                if(args.Blue is not null && subscribed.Blue != args.Blue)
+                {
+                    subscribed.Blue = (byte)args.Blue;
+                    changed = true;
+                }
+            }
+        }
+
+        return changed;
+    }
+}
+```
+After the command has been created, you must reciprocate the command to its associated manager. Nothing stops commands from being published to from the API itself, but these managers are the last change to add any sort of logic that must run before and after a command is published, while simply being more organized.
+```C#
+//Newly added method to LightsManager.cs
+public static void SetLightsRGB(
+        List<Lights> lights, 
+        byte? red, 
+        byte? green, 
+        byte? blue,
+        DeviceRegistry? registry = null
+    )
+    {
+        registry ??= DeviceRegistry.Instance;
+        CommandBus.Publish(
+            new SetLightsRGBCommand(),
+            new SetLightsRGBCommandArgs(lights, red, green, blue),
+            registry
+        );
+    }
+```
+And with that done, we can go to the API project. In `SCADAHMI API/Contracts/Requests/Command`, create a new request and payload (if any arguments were made) for the command created.
+```C#
+public sealed record SetLightsRGBRequest(
+    string? RequestId,
+    SetLightsRGBPayload Payload
+) : CommandRequest(RequestId);
+
+public sealed record SetLightsRGBPayload(
+    HashSet<Guid> Lights,
+    byte? Red,
+    byte? Green,
+    byte? Blue
+);
+```
+Afterwards, you need to change `SCADAHMI API/Controllers/CommandsController.cs` and `SCADAHMI API/Services/CommandDispatcher.cs`. In the commands controller, you add the HTTP Post endpoint for the command. In the command dispatcher, you make sure the payload being sent is safe to consume. It is expected that the command dispatcher uses the device manager its supposed to use.
+```C#
+public class CommandsController(CommandDispatcher dispatcher) : ControllerBase
+{
+    [HttpPost("rename-device")]
+    public IActionResult RenameDevice(RenameDeviceRequest request)
+        => StandardDispatch(request);
+
+    [HttpPost("set-message")]
+    public IActionResult SetMessage(SetHelloDeviceMessageRequest request)
+        => StandardDispatch(request);
+
+    [HttpPost("print-messages")]
+    public IActionResult PrintMessages(PrintHelloDeviceMessageRequest request)
+        => StandardDispatch(request);
+
+    [HttpPost("set-lights-rgb")] //New HTTP Endpoint + Function
+    public IActionResult SetLightsRGB(SetLightsRGBRequest request)
+        => StandardDispatch(request);
+
+    private IActionResult StandardDispatch(CommandRequest request)
+    {
+        ApiResponse response = dispatcher.Dispatch(request);
+        return response.Success ? Ok(response) : BadRequest(response);
+    }
+}
+```
+```C#
+namespace SCADAHMI_API.Services;
+
+
+public sealed class CommandDispatcher(DeviceRegistry registry)
+{
+    // TODO: Add ability to dispatch rename commands
+    public ApiResponse Dispatch(CommandRequest request) => request switch
+    {
+        SetHelloDeviceMessageRequest setMessage => 
+            SetHelloDeviceMessage(setMessage),
+        PrintHelloDeviceMessageRequest printMessages => 
+            PrintHelloDeviceMessages(printMessages),
+        SetLightsRGBRequest lightsRGB => //Newly added line
+            SetLightsRGB(lightsRGB),
+        _ => 
+            new ApiResponse(
+                Normalize(request.RequestId),
+                false,
+                Error: $"Unsupported command request: {request.GetType().Name}"
+            )
+    };
+
+    private ApiResponse SetHelloDeviceMessage(SetHelloDeviceMessageRequest request)
+    {
+        //...
+    }
+
+    private ApiResponse PrintHelloDeviceMessages(PrintHelloDeviceMessageRequest request)
+    {
+        //...
+    }
+
+    // Newly added function
+    private ApiResponse SetLightsRGB(SetLightsRGBRequest request)
+    {
+        string requestId = Normalize(request.RequestId);
+
+        if (request.Payload?.Lights is null || request.Payload.Lights.Count == 0)
+        {
+            return new ApiResponse(requestId, false, Error: "payload and/or guids must not be empty.");
+        }
+
+        try
+        {
+            IReadOnlyList<Lights> lights = (
+                from d in registry.GetDevicesOfType<Lights>()
+                join entry in request.Payload.Lights 
+                    on d.Guid equals entry
+                select d
+            ).ToList();
+
+
+            LightsManager.SetLightsRGB(
+                lights.ToList(),
+                request.Payload.Red,
+                request.Payload.Green,
+                request.Payload.Blue,
+                registry
+            );
+
+            return new ApiResponse(requestId, true);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse(requestId, false, Error: ex.Message);
+        }
+    }
+
+    private static string Normalize(string? requestId) =>
+        string.IsNullOrWhiteSpace(requestId) ? Guid.NewGuid().ToString() : requestId;
+}
+
+```
+And that is it! There's way less files to jump through in comparison. with 3 new files added and 3 files modified. As stated though, this process has to be repeated for every command, so it ends up taking the most time (probably). It can definitely get mind numbing.
+
+Now all that's left is to use this API
+
+### Tier 1: The frontend
+
+And this is where my knowledge no longer can help, because I was not responsible for writing the web frontend. I had OpenCode write it!
+
+Firstly, on whatever frontend you make, you will need to set up SignalR to receive server-to-client pushes. After you do that, you won't need to touch it anymore.
+
+Secondly, the API has been made to be frontend-agnostic, meaning that it can be switched from a website to Android without changing any of this C# backend code.
+
+In the words of OpenCode on how the current web frontend works...
+
+"Everything client-side lives in `SCADAHMI API/wwwroot`: `index.html` holds the cards, inputs and buttons, while `app.js` holds all the SignalR and fetch logic. Because the API serves these files itself, every URL is relative and there is no host or port to configure.
+
+"SignalR needed no extra work on our side. The server already maps `/hub`, pushes a snapshot to each client when it connects, and broadcasts a new one whenever the device registry version changes. The client only subscribes with `connection.on("devicesChanged", ...)`. Note the name is `DevicesChanged` in C# but `devicesChanged` in JavaScript, because the API serializes with camelCase.
+
+"Every button is a `fetch` POST to an API controller, funnelled through a single `postJson` helper that generates a `requestId`, serializes the body as JSON, and logs the `ApiResponse` envelope. Request properties are the camelCased names from the C# records, plus the `$type` discriminator (`helloDevice` or `lights`) that must match the polymorphic JSON strings exactly.
+
+"Adding a device type to the UI means teaching `renderSnapshot` to branch on `device.$type` and render that type's fields. The remove button must forward the device's own `$type` rather than a hardcoded value, and devices must be addressed by `device.guid` (never `device.id`). After any `app.js` change, bump the cache buster in `index.html` (`app.js?v=3`) so browsers reload the new script."
