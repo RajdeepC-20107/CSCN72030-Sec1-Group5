@@ -20,6 +20,8 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
     /// <returns>An API response concerning the success or failure of a command dispatch.</returns>
     public ApiResponse Dispatch(ApiRequest request) => request switch
     {
+        RenameDeviceRequest renameDevice =>
+            RenameDevice(renameDevice),
         SetHelloDeviceMessageRequest setMessage => 
             SetHelloDeviceMessage(setMessage),
         PrintHelloDeviceMessageRequest printMessages => 
@@ -33,6 +35,37 @@ public sealed class CommandDispatcher(DeviceRegistry registry)
                 Error: $"Unsupported command request: {request.GetType().Name}"
             )
     };
+
+    private ApiResponse RenameDevice(RenameDeviceRequest request)
+    {
+        string requestId = Normalize(request.RequestId);
+
+        if (request.Payload?.DeviceNames is null || request.Payload.DeviceNames.Count == 0)
+        {
+            return new ApiResponse(requestId, false, Error: "payload and/or messages must not be empty.");
+        }
+
+        try
+        {
+            Dictionary<Device, string> devices = (
+                from d in registry.GetDevices()
+                where request.Payload.DeviceNames.TryGetValue(d.Guid, out string? value)
+                select (d, request.Payload.DeviceNames[d.Guid])
+            ).ToDictionary();
+
+
+            IDeviceManager<Device, CreateDeviceArgs>.RenameDevice(
+                new RenameDeviceCommandArgs(devices),
+                registry
+            );
+
+            return new ApiResponse(requestId, true);
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse(requestId, false, Error: ex.Message);
+        }
+    }
 
     /// <summary>
     /// Dispatch the SetHelloDeviceCommand.

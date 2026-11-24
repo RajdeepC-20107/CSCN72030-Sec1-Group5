@@ -14,6 +14,22 @@ public interface IDeviceManager<TDevice, TCreateDeviceArgs>
     where TCreateDeviceArgs : CreateDeviceArgs
 {
     /// <summary>
+    /// Method to publish to the command bus the renaming of devices. 
+    /// This method is for all devices and cannot/should not be individualized.
+    /// The generic used does not matter. You can just use <Device, CreateDeviceArgs>.
+    /// </summary>
+    /// <param name="args"></param>
+    static void RenameDevice(RenameDeviceCommandArgs args, DeviceRegistry? registry = null)
+    {
+        registry ??= DeviceRegistry.Instance;
+        CommandBus.Publish(
+            new RenameDeviceCommand(),
+            args,
+            registry
+        );
+    }
+
+    /// <summary>
     /// Creates and subscribes a new device for this device manager's TDevice.
     /// </summary>
     /// <param name="args"></param>
