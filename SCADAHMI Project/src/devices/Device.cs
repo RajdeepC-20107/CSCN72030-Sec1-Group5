@@ -17,9 +17,4 @@ public abstract class Device
     /// a default value per class being nameof({device class})
     /// </summary>
     public abstract string Name { get; set; }
-
-    /// <summary>
-    /// Whether the device is powered on or not.
-    /// </summary>
-    public bool PoweredOn { get; set; } = true;
 }

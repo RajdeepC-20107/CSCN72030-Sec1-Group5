@@ -28,7 +28,12 @@ public class DevicesController(
             CreateHelloDevicePayload hello => HelloDeviceManager.CreateDevice(
                 new CreateHelloDeviceArgs(hello.Message), registry
             ),
-
+            CreateLightsPayload lights => LightsManager.CreateDevice(
+                new CreateLightsArgs(
+                    lights.MinimumBrightness, lights.MaximumBrightness,
+                    lights.Red, lights.Green, lights.Blue
+                ), registry
+            ),
             _ => null
         };
 
@@ -66,7 +71,7 @@ public class DevicesController(
         bool? removed = request.Payload switch
         {
             RemoveHelloDevicePayload hello => HelloDeviceManager.RemoveDevice(hello.Guid, registry),
-
+            RemoveLightsPayload lights => LightsManager.RemoveDevice(lights.Guid, registry),
             _ => null
         };
 

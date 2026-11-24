@@ -17,7 +17,8 @@ public sealed class RenameDeviceCommand
 
         foreach(var (device, newName) in args.DeviceNames)
         {
-            if (devices.TryGetValue(device.Guid, out var subscribed)) {
+            if (devices.TryGetValue(device.Guid, out var subscribed)
+                && subscribed.Name != newName) {
                 subscribed.Name = newName;
                 changed = true;
             }

@@ -11,6 +11,7 @@ namespace SCADAHMI_API.Services;
 /// </summary>
 public sealed class CommandDispatcher(DeviceRegistry registry)
 {
+    // TODO: Add ability to dispatch rename commands
     public ApiResponse Dispatch(CommandRequest request) => request switch
     {
         SetHelloDeviceMessageRequest setMessage => 

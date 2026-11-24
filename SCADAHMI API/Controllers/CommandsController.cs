@@ -14,10 +14,6 @@ public class CommandsController(CommandDispatcher dispatcher) : ControllerBase
     [HttpPost("rename-device")]
     public IActionResult RenameDevice(RenameDeviceRequest request)
         => StandardDispatch(request);
-    
-    [HttpPost("set-device-power")]
-    public IActionResult SetDevicePower(SetDevicePowerRequest request)
-        => StandardDispatch(request);
 
     [HttpPost("set-message")]
     public IActionResult SetMessage(SetHelloDeviceMessageRequest request)
