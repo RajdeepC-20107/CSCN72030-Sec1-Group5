@@ -3,21 +3,29 @@ using System;
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Command to set all HelloDevices' message values.
+/// Command to set the specified HelloDevices' message values.
 /// </summary>
 public sealed class SetHelloDeviceCommand
     : IDeviceCommand<SetHelloDeviceCommandArgs>
 {
-    void IDeviceCommand<SetHelloDeviceCommandArgs>.Execute(
+    bool IDeviceCommand<SetHelloDeviceCommandArgs>.Execute(
         DeviceRegistry deviceRegistry, 
         SetHelloDeviceCommandArgs args
     ) {
-        IReadOnlyList<HelloDevice> devices =
-            deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        var devices = deviceRegistry.GetDevicesOfType<HelloDevice>()
+            .ToDictionary(d => d.Guid);
+        
+        bool changed = false;
 
-        foreach(HelloDevice device in devices)
+        foreach(var (device, message) in args.DeviceMessages)
         {
-            device.Message = args.Message;
+            if (devices.TryGetValue(device.Guid, out var subscribed)
+                && subscribed.Message != message) {
+                subscribed.Message = message;
+                changed = true;
+            }
         }
+
+        return changed;
     }
 }

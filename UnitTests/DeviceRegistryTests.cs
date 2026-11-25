@@ -19,7 +19,7 @@ public sealed class DeviceRegistryTests
         deviceRegistry.Subscribe(helloDevice2);
         deviceRegistry.Subscribe(helloDevice1);
 
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetDevicesOfType<HelloDevice>();
 
         // Assert
         Assert.HasCount(expectedListCount, list);
@@ -43,61 +43,33 @@ public sealed class DeviceRegistryTests
         deviceRegistry.Unsubscribe(helloDevice2);
         deviceRegistry.Unsubscribe(helloDevice1);
 
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetDevicesOfType<HelloDevice>();
 
         // Assert
         Assert.IsEmpty(list);
-    }
-}
-
-/*
-[TestMethod]
-    public void SubscribeHelloDevices()
-    {
-        // Arrange
-        DeviceRegistry deviceRegistry = new();
-        int expectedListCount = 2;
-
-        // Act
-        HelloDevice? helloDevice1 = HelloDeviceManager.CreateDevice(new(), deviceRegistry);
-        HelloDevice? helloDevice2 = HelloDeviceManager.CreateDevice(new(), deviceRegistry);
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
-
-        // Assert
-        Assert.IsNotNull(helloDevice1);
-        Assert.IsNotNull(helloDevice2);
-        Assert.HasCount(expectedListCount, list);
-        Assert.Contains(helloDevice1, list);
-        Assert.Contains(helloDevice2, list);
     }
 
     [TestMethod]
-    public void UnsubscribeHelloDevices()
+    public void VersionChangesOnSubscribeAndUnsubscribe()
     {
         // Arrange
         DeviceRegistry deviceRegistry = new();
-        HelloDevice? helloDevice1 = HelloDeviceManager.CreateDevice(new(), deviceRegistry);
-        HelloDevice? helloDevice2 = HelloDeviceManager.CreateDevice(new(), deviceRegistry);
+        HelloDevice helloDevice = new();
+        int versionBefore = deviceRegistry.Version;
 
-        // Act
-        bool? success1 = (helloDevice1 is not null) 
-            ? HelloDeviceManager.RemoveDevice(helloDevice1)
-            : null;
-        bool? success2 = (helloDevice2 is not null) 
-            ? HelloDeviceManager.RemoveDevice(helloDevice2)
-            : null;
-        bool? fail = (helloDevice1 is not null) 
-            ? HelloDeviceManager.RemoveDevice(helloDevice1)
-            : null;
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        // Act & Assert
+        Assert.IsTrue(deviceRegistry.Subscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 1, deviceRegistry.Version);
 
-        // Assert
-        Assert.IsNotNull(success1);
-        Assert.IsTrue(success1);
-        Assert.IsNotNull(success2);
-        Assert.IsTrue(success2);
-        Assert.IsNotNull(fail);
-        Assert.IsFalse(fail);
-        Assert.IsEmpty(list);
+        // A duplicate subscribe must not bump the revision.
+        Assert.IsFalse(deviceRegistry.Subscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 1, deviceRegistry.Version);
+
+        Assert.IsTrue(deviceRegistry.Unsubscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 2, deviceRegistry.Version);
+
+        // A failed unsubscribe must not bump the revision.
+        Assert.IsFalse(deviceRegistry.Unsubscribe(helloDevice));
+        Assert.AreEqual(versionBefore + 2, deviceRegistry.Version);
     }
-*/
+}

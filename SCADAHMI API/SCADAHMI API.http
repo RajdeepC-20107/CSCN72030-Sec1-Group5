@@ -1,0 +1,112 @@
+@SCADAHMI_API_HostAddress = http://localhost:5207
+
+### Create a HelloDevice
+POST {{SCADAHMI_API_HostAddress}}/api/devices/create
+Content-Type: application/json
+
+{
+  "requestId": "demo-create",
+  "payload": {
+    "$type": "helloDevice",
+    "message": "Hello from the API"
+  }
+}
+
+### Create Lights with preset properties
+POST {{SCADAHMI_API_HostAddress}}/api/devices/create
+Content-Type: application/json
+
+{
+  "requestId": "demo-create-lights",
+  "payload": {
+    "$type": "lights",
+    "minimumBrightness": 10,
+    "maximumBrightness": 100,
+    "red": 255,
+    "green": 128,
+    "blue": 0
+  }
+}
+
+### Create Lights with default properties (null uses the device default)
+POST {{SCADAHMI_API_HostAddress}}/api/devices/create
+Content-Type: application/json
+
+{
+  "requestId": "demo-create-lights-default",
+  "payload": {
+    "$type": "lights",
+    "minimumBrightness": null,
+    "maximumBrightness": null,
+    "red": null,
+    "green": null,
+    "blue": null
+  }
+}
+
+### Get the current device snapshot
+GET {{SCADAHMI_API_HostAddress}}/api/devices
+Accept: application/json
+
+### Get the snapshot only when a newer version exists
+GET {{SCADAHMI_API_HostAddress}}/api/devices?since=1
+Accept: application/json
+
+### Set the messages of specific HelloDevices (ids come from GET /api/devices)
+POST {{SCADAHMI_API_HostAddress}}/api/commands/set-message
+Content-Type: application/json
+
+{
+  "requestId": "demo-1",
+  "payload": {
+    "messages": {
+      "00000000-0000-0000-0000-000000000000": "No way!"
+    }
+  }
+}
+
+### Set the RGB of specific Lights (only supplied channels change; ids come from GET /api/devices)
+POST {{SCADAHMI_API_HostAddress}}/api/commands/set-lights-rgb
+Content-Type: application/json
+
+{
+  "requestId": "demo-rgb",
+  "payload": {
+    "lights": [
+      "00000000-0000-0000-0000-000000000000"
+    ],
+    "green": 10
+  }
+}
+
+### Print all HelloDevice messages to the API server console
+POST {{SCADAHMI_API_HostAddress}}/api/commands/print-messages
+Content-Type: application/json
+
+{
+  "requestId": "demo-print"
+}
+
+### Remove a HelloDevice (ids come from GET /api/devices)
+POST {{SCADAHMI_API_HostAddress}}/api/devices/remove
+Content-Type: application/json
+
+{
+  "requestId": "demo-remove",
+  "payload": {
+    "$type": "helloDevice",
+    "guid": "00000000-0000-0000-0000-000000000000"
+  }
+}
+
+### Remove Lights (ids come from GET /api/devices)
+POST {{SCADAHMI_API_HostAddress}}/api/devices/remove
+Content-Type: application/json
+
+{
+  "requestId": "demo-remove-lights",
+  "payload": {
+    "$type": "lights",
+    "guid": "00000000-0000-0000-0000-000000000000"
+  }
+}

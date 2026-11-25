@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Linq;
 
 namespace SCADAHMI_Project;
@@ -16,7 +17,33 @@ public class DeviceRegistry
     /// <summary>
     /// The container for all devices.
     /// </summary>
-    private readonly Dictionary<Guid, Device> devices = [];
+    private readonly ConcurrentDictionary<Guid, Device> devices = new();
+
+    /// <summary>
+    /// The version of the DeviceRegistry.
+    /// </summary>
+    private int version;
+
+    /// <summary>
+    /// Raised whenever the registry revision advances. Any mutation that
+    /// calls <see cref="MarkChanged"/> automatically notifies listeners,
+    /// regardless of which command or manager performed it.
+    /// </summary>
+    public event EventHandler<int>? Changed;
+
+    /// <summary>
+    /// Monotonic revision of the registry; clients use it to detect changes.
+    /// </summary>
+    public int Version => Volatile.Read(ref version);
+
+    /// <summary>
+    /// Bumps the revision after a device or its state has changed.
+    /// </summary>
+    public void MarkChanged()
+    {
+        int next = Interlocked.Increment(ref version);
+        Changed?.Invoke(this, next);
+    }
     
     /// <summary>
     /// Subscribe a device to be affected by commands.
@@ -27,7 +54,13 @@ public class DeviceRegistry
     public bool Subscribe<TDevice>(TDevice instance)
         where TDevice : Device
     {
-        return devices.TryAdd(instance.Guid, instance);
+        if (!devices.TryAdd(instance.Guid, instance))
+        {
+            return false;
+        }
+
+        MarkChanged();
+        return true;
     }
 
     /// <summary>
@@ -39,7 +72,55 @@ public class DeviceRegistry
     public bool Unsubscribe<TDevice>(TDevice instance)
         where TDevice : Device
     {
-        return devices.Remove(instance.Guid);
+        if (!devices.TryRemove(instance.Guid, out _))
+        {
+            return false;
+        }
+
+        MarkChanged();
+        return true;
+    }
+
+    /// <summary>
+    /// Get a subscribed device based on its GUID.
+    /// </summary>
+    /// <param name="guid"></param>
+    /// <returns>The device if found, null if not.</returns>
+    public Device? GetDevice(Guid guid)
+    {
+        devices.TryGetValue(guid, out Device? device);
+        return device;
+    }
+
+    /// <summary>
+    /// Get a subscribed device based on its GUID if the device type matches.
+    /// </summary>
+    /// <typeparam name="TDevice"></typeparam>
+    /// <param name="guid"></param>
+    /// <returns>The device if found and the type matches, null if not.</returns>
+    public TDevice? GetDeviceOfType<TDevice>(Guid guid)
+        where TDevice : Device
+    {
+        devices.TryGetValue(guid, out Device? device);
+        if(device is null)
+        {
+            return null;
+        }
+
+        return device is TDevice typed 
+            ? typed 
+            : null;
+    }
+
+    /// <summary>
+    /// Gets all subscribed devices.
+    /// </summary>
+    /// <returns>A read-only list of all devices.</returns>
+    public IReadOnlyList<Device> GetDevices()
+    {
+        return devices.Values
+            .OrderBy(d => d.Guid)
+            .ToList();
     }
 
     /// <summary>
@@ -47,7 +128,7 @@ public class DeviceRegistry
     /// </summary>
     /// <typeparam name="TDevice"></typeparam>
     /// <returns>A read-only list of that certain device type.</returns>
-    public IReadOnlyList<TDevice> GetSubscribedDevices<TDevice>()
+    public IReadOnlyList<TDevice> GetDevicesOfType<TDevice>()
         where TDevice : Device
     {
         return devices.Values

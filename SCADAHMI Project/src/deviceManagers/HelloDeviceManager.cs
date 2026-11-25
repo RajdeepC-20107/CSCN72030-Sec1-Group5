@@ -19,14 +19,32 @@ public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceA
         return (success) ? device : null;
     }
 
+    public static HelloDevice? GetDevice(Guid guid, DeviceRegistry? registry = null)
+    {
+        registry ??= DeviceRegistry.Instance;
+        return registry.GetDeviceOfType<HelloDevice>(guid);
+    }
+
     public static bool RemoveDevice(HelloDevice device, DeviceRegistry? registry = null)
     {
         registry ??= DeviceRegistry.Instance;
         return registry.Unsubscribe(device);
     }
 
+    public static bool RemoveDevice(Guid deviceGuid, DeviceRegistry? registry = null)
+    {
+        registry ??= DeviceRegistry.Instance;
+        HelloDevice? device = GetDevice(deviceGuid, registry);
+        if(device is null)
+        {
+            return false;
+        }
+
+        return registry.Unsubscribe(device);
+    }
+
     /// <summary>
-    /// Sets the messages of the given HelloDevice array.
+    /// Sets the messages of the given HelloDevice list.
     /// </summary>
     /// <param name="deviceMessages"></param>
     /// <param name="registry"></param>
@@ -36,14 +54,28 @@ public class HelloDeviceManager : IDeviceManager<HelloDevice, CreateHelloDeviceA
     )
     {
         registry ??= DeviceRegistry.Instance;
-        var devices = registry.GetSubscribedDevices<HelloDevice>()
-            .ToDictionary(d => d.Guid);
-        
-        foreach(var (device, message) in deviceMessages)
-        {
-            if (devices.TryGetValue(device.Guid, out var subscribed)) {
-                subscribed.Message = message;
-            }
-        }
+        CommandBus.Publish(
+            new SetHelloDeviceCommand(),
+            new SetHelloDeviceCommandArgs(
+                deviceMessages
+            ),
+            registry
+        );
+    }
+
+    /// <summary>
+    /// Prints the messages of all subscribed HelloDevices.
+    /// </summary>
+    /// <param name="registry"></param>
+    public static void PrintHelloDeviceMessages(
+        DeviceRegistry? registry = null
+    )
+    {
+        registry ??= DeviceRegistry.Instance;
+        CommandBus.Publish(
+            new PrintHelloDeviceCommand(),
+            new NoCommandArgs(),
+            registry
+        );
     }
 }

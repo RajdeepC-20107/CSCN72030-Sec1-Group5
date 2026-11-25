@@ -1,6 +1,6 @@
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Record describing no arguments.
+/// For when a command requires no arguments.
 /// </summary>
 public record NoCommandArgs : CommandArgs;

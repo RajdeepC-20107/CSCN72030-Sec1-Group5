@@ -3,9 +3,9 @@ using System;
 namespace SCADAHMI_Project;
 
 /// <summary>
-/// Command arguments for SetHelloDevice
+/// Command arguments for setting the messages of HelloDevices.
 /// </summary>
-/// <param name="Message"></param>
+/// <param name="DeviceMessages"></param>
 public sealed record SetHelloDeviceCommandArgs(
-    string Message = "Hello World!"
+    List<(HelloDevice, string)> DeviceMessages
 ) : CommandArgs;

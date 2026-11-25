@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCADA HMI - Local Test Client</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #f4f6f8;
+      color: #1b2430;
+    }
+
+    body { margin: 0; padding: 1.5rem; }
+    h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
+    h2 { margin: 0 0 .75rem; font-size: 1rem; text-transform: uppercase; letter-spacing: .06em; color: #56657a; }
+    p.subtitle { margin: 0 0 1.25rem; color: #56657a; }
+
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      max-width: 1100px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #dbe1e8;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 1px 2px rgba(16, 32, 48, .05);
+    }
+
+    .card.wide { grid-column: 1 / -1; }
+
+    .status { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+    .badge {
+      display: inline-block; padding: .25rem .6rem; border-radius: 999px;
+      font-size: .8rem; font-weight: 600; background: #e2e8f0; color: #334155;
+    }
+    .badge.connected { background: #dcfce7; color: #166534; }
+    .badge.disconnected { background: #fee2e2; color: #991b1b; }
+    .badge.reconnecting { background: #fef3c7; color: #92400e; }
+
+    .version { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+    label { display: block; font-size: .85rem; margin: .75rem 0 .3rem; color: #475569; }
+    input[type="text"], input[type="number"] {
+      width: 100%; box-sizing: border-box; padding: .5rem .65rem;
+      border: 1px solid #cbd5e1; border-radius: 6px; font: inherit;
+    }
+    .field-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+      gap: .5rem .75rem;
+    }
+    .field-grid label { margin: 0 0 .25rem; font-size: .75rem; }
+    button {
+      margin-top: .85rem; padding: .5rem .9rem; border: 0; border-radius: 6px;
+      background: #1d4ed8; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    button:hover { background: #1e40af; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    button.secondary { background: #475569; }
+    button.secondary:hover { background: #334155; }
+    button.danger { background: #b91c1c; }
+    button.danger:hover { background: #991b1b; }
+
+    .card.print-card {
+      background: linear-gradient(160deg, #f5f3ff, #ede9fe);
+      border-color: #ddd6fe;
+      text-align: center;
+    }
+    .print-card h2 { color: #5b21b6; }
+    .print-icon { font-size: 2.2rem; line-height: 1; margin: .25rem 0 .5rem; }
+    button.print {
+      display: block; width: 100%; margin-top: .75rem;
+      padding: 1.25rem 1rem; font-size: 1.1rem; letter-spacing: .02em;
+      background: #7c3aed; box-shadow: 0 4px 0 #5b21b6;
+    }
+    button.print:hover { background: #6d28d9; }
+    button.print:active { transform: translateY(3px); box-shadow: 0 1px 0 #5b21b6; }
+
+    ul.devices { list-style: none; padding: 0; margin: 0; }
+    ul.devices li {
+      display: flex; justify-content: space-between; gap: 1rem; align-items: center;
+      border-bottom: 1px solid #e8edf2; padding: .6rem 0;
+    }
+    ul.devices li:last-child { border-bottom: 0; }
+    .device-id { font-family: ui-monospace, monospace; font-size: .8rem; color: #64748b; }
+    .device-info { display: flex; flex-direction: column; min-width: 0; }
+    .device-name { font-size: .85rem; font-weight: 600; }
+    .device-name-line { display: flex; align-items: center; gap: .5rem; }
+    .rgb-swatch {
+      display: inline-block; flex: 0 0 auto; width: 1.1rem; height: 1.1rem;
+      border: 1px solid #94a3b8; border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5);
+    }
+    .device-props { font-size: .72rem; color: #64748b; margin-top: .15rem; }
+    ul.devices li.lights { align-items: flex-start; }
+    .device-controls { display: flex; align-items: center; justify-content: flex-end; gap: .4rem; flex: 1; flex-wrap: wrap; }
+    input.device-input {
+      flex: 1; min-width: 0; padding: .35rem .5rem; font: inherit; font-size: .85rem;
+      border: 1px solid #cbd5e1; border-radius: 5px;
+    }
+    input.rgb-input {
+      flex: 0 0 4.25rem; width: 4.25rem; min-width: 0;
+      padding: .35rem .4rem; font: inherit; font-size: .8rem;
+      border: 1px solid #cbd5e1; border-radius: 5px;
+    }
+    button.small { margin-top: 0; padding: .35rem .6rem; font-size: .78rem; }
+    .hint { margin: .6rem 0 0; font-size: .8rem; color: #64748b; }
+    .empty { color: #94a3b8; font-style: italic; }
+
+    pre.log {
+      margin: 0; max-height: 180px; overflow: auto; background: #0f172a; color: #cbd5e1;
+      padding: .75rem; border-radius: 6px; font-size: .78rem; line-height: 1.5; white-space: pre-wrap;
+    }
+    code { background: #eef2f7; padding: .1rem .3rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>SCADA HMI</h1>
+  <p class="subtitle">Local test client for the API. Connect, then use the forms to exercise the backend.</p>
+
+  <main>
+    <section class="card wide">
+      <h2>Connection</h2>
+      <div class="status">
+        <span id="connectionStatus" class="badge disconnected">Disconnected</span>
+        <span>Registry version: <span id="version" class="version">-</span></span>
+        <span>Last update: <span id="lastSource" class="empty">none</span></span>
+      </div>
+      <p style="margin:.75rem 0 0; font-size:.85rem; color:#56657a;">
+        The server pushes the current snapshot as soon as the SignalR connection opens.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Create a HelloDevice</h2>
+      <label for="createMessage">Initial message</label>
+      <input id="createMessage" type="text" value="Hello from the HMI" autocomplete="off">
+      <button id="createButton">POST /api/devices/create</button>
+    </section>
+
+    <section class="card">
+      <h2>Create Lights</h2>
+      <div class="field-grid">
+        <div>
+          <label for="createMinBrightness">Min brightness</label>
+          <input id="createMinBrightness" type="number" min="0" max="100" value="10">
+        </div>
+        <div>
+          <label for="createMaxBrightness">Max brightness</label>
+          <input id="createMaxBrightness" type="number" min="0" max="100" value="100">
+        </div>
+        <div>
+          <label for="createRed">Red</label>
+          <input id="createRed" type="number" min="0" max="255" value="255">
+        </div>
+        <div>
+          <label for="createGreen">Green</label>
+          <input id="createGreen" type="number" min="0" max="255" value="255">
+        </div>
+        <div>
+          <label for="createBlue">Blue</label>
+          <input id="createBlue" type="number" min="0" max="255" value="255">
+        </div>
+      </div>
+      <button id="createLightsButton">POST /api/devices/create</button>
+      <p class="hint">Leave a field empty to use the device default.</p>
+    </section>
+
+    <section class="card">
+      <h2>Set device messages</h2>
+      <label for="setMessage">Message for all devices</label>
+      <input id="setMessage" type="text" value="No way!" autocomplete="off">
+      <button id="setButton">Apply to all devices</button>
+      <p class="hint">Or edit or remove a single device in the Live snapshot list below.</p>
+    </section>
+
+    <section class="card print-card">
+      <h2>Print device messages</h2>
+      <div class="print-icon" aria-hidden="true">&#128424;</div>
+      <p class="hint">Writes every HelloDevice message to the API server console.</p>
+      <button id="printButton" class="print">Print all messages</button>
+    </section>
+
+    <section class="card">
+      <h2>Conditional poll</h2>
+      <p style="margin:0; font-size:.85rem; color:#56657a;">
+        Ask for changes since the version currently displayed. The API replies with
+        <code>304 Not Modified</code> when nothing changed.
+      </p>
+      <button id="checkButton" class="secondary">GET /api/devices?since=N</button>
+    </section>
+
+    <section class="card">
+      <h2>Live snapshot</h2>
+      <ul id="deviceList" class="devices">
+        <li class="empty">Waiting for the initial snapshot&hellip;</li>
+      </ul>
+    </section>
+
+    <section class="card wide">
+      <h2>Activity</h2>
+      <pre id="log" class="log"></pre>
+    </section>
+  </main>
+
+  <script src="./lib/signalr/signalr.min.js"></script>
+  <script src="./app.js?v=5"></script>
+</body>
+</html>

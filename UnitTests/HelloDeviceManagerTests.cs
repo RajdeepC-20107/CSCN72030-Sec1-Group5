@@ -3,7 +3,7 @@
 using SCADAHMI_Project;
 
 [TestClass]
-public sealed class deviceRegistryTests
+public sealed class HelloDeviceManagerTests
 {
     [TestMethod]
     public void SubscribeHelloDevices()
@@ -15,7 +15,7 @@ public sealed class deviceRegistryTests
         // Act
         HelloDevice? helloDevice1 = HelloDeviceManager.CreateDevice(new(), deviceRegistry);
         HelloDevice? helloDevice2 = HelloDeviceManager.CreateDevice(new(), deviceRegistry);
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetDevicesOfType<HelloDevice>();
 
         // Assert
         Assert.IsNotNull(helloDevice1);
@@ -43,7 +43,7 @@ public sealed class deviceRegistryTests
         bool? fail = (helloDevice1 is not null) 
             ? HelloDeviceManager.RemoveDevice(helloDevice1, deviceRegistry)
             : null;
-        var list = deviceRegistry.GetSubscribedDevices<HelloDevice>();
+        var list = deviceRegistry.GetDevicesOfType<HelloDevice>();
 
         // Assert
         Assert.IsNotNull(success1);
